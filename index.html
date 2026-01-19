@@ -22,7 +22,7 @@
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 20px 30px;
+            padding: 15px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -53,11 +53,110 @@
             opacity: 0.8;
         }
 
+        /* Alerts Panel */
+        .alerts-panel {
+            background: white;
+            border-left: 4px solid #ef4444;
+            margin: 20px;
+            padding: 15px 20px;
+            border-radius: 0 8px 8px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            display: none;
+        }
+
+        .alerts-panel.has-alerts {
+            display: block;
+        }
+
+        .alerts-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .alerts-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .alerts-title::before {
+            content: "!";
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: #ef4444;
+            color: white;
+            border-radius: 50%;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .alerts-dismiss {
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+        }
+
+        .alert-items {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background: #fef2f2;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .alert-item.warning {
+            background: #fffbeb;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .alert-item.critical {
+            background: #fef2f2;
+            border-left: 3px solid #ef4444;
+        }
+
+        .alert-item.info {
+            background: #eff6ff;
+            border-left: 3px solid #3b82f6;
+        }
+
+        .alert-action {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .alert-action:hover {
+            background: #5a67d8;
+        }
+
         .nav-tabs {
             display: flex;
             background: white;
             padding: 0 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            flex-wrap: wrap;
         }
 
         .nav-tab {
@@ -67,6 +166,7 @@
             font-weight: 500;
             color: #666;
             transition: all 0.3s;
+            position: relative;
         }
 
         .nav-tab:hover {
@@ -76,6 +176,19 @@
         .nav-tab.active {
             color: #667eea;
             border-bottom-color: #667eea;
+        }
+
+        .nav-tab .badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #ef4444;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
         }
 
         .container {
@@ -94,8 +207,8 @@
 
         .cards-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 15px;
             margin-bottom: 20px;
         }
 
@@ -104,22 +217,42 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+        }
+
+        .card.clickable {
+            border: 2px solid transparent;
+        }
+
+        .card.clickable:hover {
+            border-color: #667eea;
+        }
+
+        .card.clickable.selected {
+            border-color: #667eea;
+            background: #f5f7ff;
         }
 
         .card-title {
-            font-size: 14px;
+            font-size: 13px;
             color: #666;
             margin-bottom: 8px;
         }
 
         .card-value {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: #1a1a2e;
         }
 
         .card-subtitle {
-            font-size: 12px;
+            font-size: 11px;
             color: #999;
             margin-top: 5px;
         }
@@ -149,11 +282,19 @@
             align-items: center;
             padding: 15px 20px;
             border-bottom: 1px solid #eee;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         .table-title {
             font-size: 18px;
             font-weight: 600;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
         }
 
         .search-box {
@@ -167,6 +308,44 @@
         .search-box:focus {
             outline: none;
             border-color: #667eea;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #5a67d8;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #666;
+            border: 1px solid #ddd;
+        }
+
+        .btn-secondary:hover {
+            background: #f5f5f5;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+            border: none;
         }
 
         table {
@@ -184,17 +363,36 @@
             background: #f8f9fa;
             font-weight: 600;
             color: #666;
-            font-size: 13px;
+            font-size: 12px;
             text-transform: uppercase;
             cursor: pointer;
+            position: sticky;
+            top: 0;
+            z-index: 1;
         }
 
         th:hover {
             background: #f0f0f0;
         }
 
+        th.sorted-asc::after {
+            content: " ↑";
+        }
+
+        th.sorted-desc::after {
+            content: " ↓";
+        }
+
         tr:hover {
             background: #f8f9fa;
+        }
+
+        tr.clickable {
+            cursor: pointer;
+        }
+
+        tr.clickable:hover {
+            background: #f0f4ff;
         }
 
         .table-wrapper {
@@ -232,10 +430,21 @@
             margin-bottom: 20px;
         }
 
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
         .chart-title {
             font-size: 18px;
             font-weight: 600;
-            margin-bottom: 15px;
+        }
+
+        .chart-hint {
+            font-size: 12px;
+            color: #999;
         }
 
         .charts-row {
@@ -250,6 +459,7 @@
             gap: 15px;
             margin-bottom: 20px;
             flex-wrap: wrap;
+            align-items: center;
         }
 
         .filter-group {
@@ -263,12 +473,32 @@
             color: #666;
         }
 
-        .filter-group select {
+        .filter-group select, .filter-group input {
             padding: 8px 12px;
             border: 1px solid #ddd;
             border-radius: 8px;
             font-size: 14px;
             background: white;
+        }
+
+        .active-filter {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .active-filter button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            line-height: 1;
         }
 
         .loading {
@@ -326,21 +556,148 @@
             background: rgba(255,255,255,0.3);
         }
 
-        .data-source-badge {
-            font-size: 11px;
-            padding: 3px 8px;
-            border-radius: 4px;
-            margin-left: 10px;
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s;
         }
 
-        .source-live {
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .detail-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .detail-value {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #1a1a2e;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+            z-index: 1001;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success {
             background: #10b981;
-            color: white;
         }
 
-        .source-local {
-            background: #f59e0b;
-            color: white;
+        .toast.error {
+            background: #ef4444;
+        }
+
+        /* Consumption spike indicator */
+        .spike-indicator {
+            color: #ef4444;
+            font-weight: 600;
+        }
+
+        .spike-indicator::before {
+            content: "↑";
+            margin-right: 4px;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header-stats {
+                gap: 15px;
+            }
+
+            .charts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .detail-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -367,23 +724,102 @@
         </div>
     </div>
 
+    <!-- Alerts Panel -->
+    <div class="alerts-panel" id="alerts-panel">
+        <div class="alerts-header">
+            <div class="alerts-title">Action Required</div>
+            <button class="alerts-dismiss" onclick="dismissAlerts()">&times;</button>
+        </div>
+        <div class="alert-items" id="alert-items">
+            <!-- Alerts will be populated here -->
+        </div>
+    </div>
+
     <div class="nav-tabs">
-        <div class="nav-tab active" data-tab="inventory">Current Inventory</div>
+        <div class="nav-tab active" data-tab="alerts">
+            Alerts
+            <span class="badge" id="alerts-badge" style="display:none;">0</span>
+        </div>
+        <div class="nav-tab" data-tab="inventory">Current Inventory</div>
         <div class="nav-tab" data-tab="consumption">Consumption & DRR</div>
         <div class="nav-tab" data-tab="doc">Days of Cover</div>
         <div class="nav-tab" data-tab="inwarded">RM Inwarded</div>
     </div>
 
     <div class="container">
-        <!-- Inventory Tab -->
-        <div class="tab-content active" id="inventory-tab">
+        <!-- Alerts Tab -->
+        <div class="tab-content active" id="alerts-tab">
             <div class="cards-grid">
-                <div class="card">
+                <div class="card danger clickable" onclick="filterByAlertType('critical')">
+                    <div class="card-title">Critical Stock (DoC &lt; 7 days)</div>
+                    <div class="card-value" id="alert-critical-count">--</div>
+                    <div class="card-subtitle">Immediate reorder required</div>
+                </div>
+                <div class="card danger clickable" onclick="filterByAlertType('zero')">
+                    <div class="card-title">Zero Stock Items</div>
+                    <div class="card-value" id="alert-zero-count">--</div>
+                    <div class="card-subtitle">Out of stock</div>
+                </div>
+                <div class="card warning clickable" onclick="filterByAlertType('spike')">
+                    <div class="card-title">Consumption Spikes</div>
+                    <div class="card-value" id="alert-spike-count">--</div>
+                    <div class="card-subtitle">&gt;50% increase vs last month</div>
+                </div>
+                <div class="card warning clickable" onclick="filterByAlertType('low')">
+                    <div class="card-title">Low Stock (7-30 days)</div>
+                    <div class="card-value" id="alert-low-count">--</div>
+                    <div class="card-subtitle">Plan replenishment</div>
+                </div>
+            </div>
+
+            <div id="active-filters" class="filters" style="display:none;">
+                <span>Active Filter:</span>
+                <div class="active-filter" id="filter-badge">
+                    <span id="filter-text"></span>
+                    <button onclick="clearAlertFilter()">&times;</button>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Alert Details</div>
+                    <div class="table-actions">
+                        <input type="text" class="search-box" id="alerts-search" placeholder="Search products...">
+                        <button class="btn btn-primary" onclick="exportAlerts()">
+                            <span>Export CSV</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table id="alerts-table">
+                        <thead>
+                            <tr>
+                                <th>Alert Type</th>
+                                <th>Product</th>
+                                <th>Category</th>
+                                <th class="align-right">Current Stock</th>
+                                <th class="align-right">DoC (Days)</th>
+                                <th class="align-right">Monthly Consumption</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alerts-tbody">
+                            <tr><td colspan="7" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Inventory Tab -->
+        <div class="tab-content" id="inventory-tab">
+            <div class="cards-grid">
+                <div class="card clickable" onclick="filterInventoryByType('all')">
                     <div class="card-title">Total Unrestricted Inventory</div>
                     <div class="card-value" id="total-unrestricted">--</div>
                     <div class="card-subtitle">Units available</div>
                 </div>
-                <div class="card">
+                <div class="card clickable" onclick="filterInventoryByType('restricted')">
                     <div class="card-title">Total Restricted Inventory</div>
                     <div class="card-value" id="total-restricted">--</div>
                     <div class="card-subtitle">Units on hold</div>
@@ -393,38 +829,48 @@
                     <div class="card-value" id="total-categories">--</div>
                     <div class="card-subtitle">Unique categories</div>
                 </div>
-                <div class="card">
+                <div class="card danger clickable" onclick="filterInventoryByType('zero')">
                     <div class="card-title">Zero Stock Items</div>
                     <div class="card-value" id="zero-stock">--</div>
-                    <div class="card-subtitle">Need attention</div>
+                    <div class="card-subtitle">Click to view</div>
                 </div>
             </div>
 
             <div class="charts-row">
                 <div class="chart-container">
-                    <div class="chart-title">Inventory by Category</div>
+                    <div class="chart-header">
+                        <div class="chart-title">Inventory by Category</div>
+                        <div class="chart-hint">Click segment to filter</div>
+                    </div>
                     <canvas id="inventoryCategoryChart"></canvas>
                 </div>
                 <div class="chart-container">
-                    <div class="chart-title">Top 10 Products by Stock</div>
+                    <div class="chart-header">
+                        <div class="chart-title">Top 10 Products by Stock</div>
+                        <div class="chart-hint">Click bar to view details</div>
+                    </div>
                     <canvas id="topProductsChart"></canvas>
                 </div>
             </div>
 
             <div class="table-container">
                 <div class="table-header">
-                    <div class="table-title">Inventory Details</div>
-                    <input type="text" class="search-box" id="inventory-search" placeholder="Search products...">
+                    <div class="table-title">Inventory Details <span id="inventory-filter-label"></span></div>
+                    <div class="table-actions">
+                        <input type="text" class="search-box" id="inventory-search" placeholder="Search products...">
+                        <button class="btn btn-secondary" onclick="clearInventoryFilter()">Clear Filter</button>
+                        <button class="btn btn-primary" onclick="exportInventory()">Export CSV</button>
+                    </div>
                 </div>
                 <div class="table-wrapper">
                     <table id="inventory-table">
                         <thead>
                             <tr>
-                                <th>Category</th>
-                                <th>Product Name</th>
-                                <th class="align-right">Restricted</th>
-                                <th class="align-right">Unrestricted</th>
-                                <th class="align-right">Total</th>
+                                <th onclick="sortInventory('category')">Category</th>
+                                <th onclick="sortInventory('product')">Product Name</th>
+                                <th class="align-right" onclick="sortInventory('restricted')">Restricted</th>
+                                <th class="align-right" onclick="sortInventory('unrestricted')">Unrestricted</th>
+                                <th class="align-right" onclick="sortInventory('total')">Total</th>
                             </tr>
                         </thead>
                         <tbody id="inventory-tbody">
@@ -453,10 +899,10 @@
                     <div class="card-value" id="active-products">--</div>
                     <div class="card-subtitle">With consumption</div>
                 </div>
-                <div class="card">
-                    <div class="card-title">Months of Data</div>
-                    <div class="card-value" id="months-data">--</div>
-                    <div class="card-subtitle">Available history</div>
+                <div class="card warning clickable" onclick="showConsumptionSpikes()">
+                    <div class="card-title">Consumption Spikes</div>
+                    <div class="card-value" id="consumption-spikes">--</div>
+                    <div class="card-subtitle">&gt;50% increase</div>
                 </div>
             </div>
 
@@ -476,14 +922,20 @@
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Monthly Consumption Trend</div>
+                <div class="chart-header">
+                    <div class="chart-title">Monthly Consumption Trend</div>
+                    <div class="chart-hint">Click point to filter by month</div>
+                </div>
                 <canvas id="consumptionTrendChart"></canvas>
             </div>
 
             <div class="table-container">
                 <div class="table-header">
                     <div class="table-title">Consumption Details with DRR</div>
-                    <input type="text" class="search-box" id="consumption-search" placeholder="Search products...">
+                    <div class="table-actions">
+                        <input type="text" class="search-box" id="consumption-search" placeholder="Search products...">
+                        <button class="btn btn-primary" onclick="exportConsumption()">Export CSV</button>
+                    </div>
                 </div>
                 <div class="table-wrapper">
                     <table id="consumption-table">
@@ -493,10 +945,11 @@
                                 <th>Product</th>
                                 <th class="align-right">Monthly Consumption</th>
                                 <th class="align-right">DRR (Daily Rate)</th>
+                                <th class="align-right">Change</th>
                             </tr>
                         </thead>
                         <tbody id="consumption-tbody">
-                            <tr><td colspan="4" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
+                            <tr><td colspan="5" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -506,22 +959,22 @@
         <!-- Days of Cover Tab -->
         <div class="tab-content" id="doc-tab">
             <div class="cards-grid">
-                <div class="card danger">
+                <div class="card danger clickable" onclick="filterDocByStatus('critical')">
                     <div class="card-title">Critical Stock (&lt;7 days)</div>
                     <div class="card-value" id="critical-stock">--</div>
                     <div class="card-subtitle">Immediate action needed</div>
                 </div>
-                <div class="card warning">
+                <div class="card warning clickable" onclick="filterDocByStatus('low')">
                     <div class="card-title">Low Stock (7-30 days)</div>
                     <div class="card-value" id="low-stock">--</div>
                     <div class="card-subtitle">Plan replenishment</div>
                 </div>
-                <div class="card success">
+                <div class="card success clickable" onclick="filterDocByStatus('healthy')">
                     <div class="card-title">Healthy Stock (&gt;30 days)</div>
                     <div class="card-value" id="healthy-stock">--</div>
                     <div class="card-subtitle">Good coverage</div>
                 </div>
-                <div class="card">
+                <div class="card clickable" onclick="filterDocByStatus('nodata')">
                     <div class="card-title">No Consumption Data</div>
                     <div class="card-value" id="no-consumption">--</div>
                     <div class="card-subtitle">Cannot calculate DoC</div>
@@ -529,24 +982,31 @@
             </div>
 
             <div class="chart-container">
-                <div class="chart-title">Stock Coverage Distribution</div>
+                <div class="chart-header">
+                    <div class="chart-title">Stock Coverage Distribution</div>
+                    <div class="chart-hint">Click segment to filter table</div>
+                </div>
                 <canvas id="docDistributionChart"></canvas>
             </div>
 
             <div class="table-container">
                 <div class="table-header">
-                    <div class="table-title">Days of Cover Analysis</div>
-                    <input type="text" class="search-box" id="doc-search" placeholder="Search products...">
+                    <div class="table-title">Days of Cover Analysis <span id="doc-filter-label"></span></div>
+                    <div class="table-actions">
+                        <input type="text" class="search-box" id="doc-search" placeholder="Search products...">
+                        <button class="btn btn-secondary" onclick="clearDocFilter()">Clear Filter</button>
+                        <button class="btn btn-primary" onclick="exportDoc()">Export CSV</button>
+                    </div>
                 </div>
                 <div class="table-wrapper">
                     <table id="doc-table">
                         <thead>
                             <tr>
-                                <th>Product</th>
-                                <th class="align-right">Current Stock</th>
-                                <th class="align-right">Monthly Consumption</th>
-                                <th class="align-right">DRR</th>
-                                <th class="align-right">Days of Cover</th>
+                                <th onclick="sortDoc('product')">Product</th>
+                                <th class="align-right" onclick="sortDoc('stock')">Current Stock</th>
+                                <th class="align-right" onclick="sortDoc('consumption')">Monthly Consumption</th>
+                                <th class="align-right" onclick="sortDoc('drr')">DRR</th>
+                                <th class="align-right" onclick="sortDoc('doc')">Days of Cover</th>
                                 <th>Status</th>
                             </tr>
                         </thead>
@@ -608,7 +1068,10 @@
             <div class="table-container">
                 <div class="table-header">
                     <div class="table-title">RM Inward Details</div>
-                    <input type="text" class="search-box" id="inwarded-search" placeholder="Search...">
+                    <div class="table-actions">
+                        <input type="text" class="search-box" id="inwarded-search" placeholder="Search...">
+                        <button class="btn btn-primary" onclick="exportInwarded()">Export CSV</button>
+                    </div>
                 </div>
                 <div class="table-wrapper">
                     <table id="inwarded-table">
@@ -632,20 +1095,77 @@
         </div>
     </div>
 
+    <!-- Product Detail Modal -->
+    <div class="modal-overlay" id="product-modal">
+        <div class="modal">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-product-name">Product Details</div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-grid" id="modal-details">
+                    <!-- Details populated dynamically -->
+                </div>
+                <div id="modal-chart-container">
+                    <h4 style="margin-bottom: 10px;">Consumption History</h4>
+                    <canvas id="modalConsumptionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
     <script>
         // Global data stores
         let inventoryData = [];
         let consumptionData = [];
         let inwardedData = [];
         let docData = [];
+        let alertsData = [];
+        let consumptionSpikes = [];
+
+        // Filter states
+        let currentInventoryFilter = null;
+        let currentDocFilter = null;
+        let currentAlertFilter = null;
+        let inventorySortField = null;
+        let inventorySortDir = 'asc';
+        let docSortField = 'doc';
+        let docSortDir = 'asc';
 
         // Chart instances
         let charts = {};
+
+        // Google Sheets IDs
+        const SHEETS = {
+            inventory: '1sloqBYcpvymJCszFtrk_QM_EmhB3uSmJ93bYfFBET0o',
+            consumption: '1O3ERZ7iq-MRlRmGTlgb7nHJ339r1JVz0VjdJQ1iGvyw',
+            inwarded: '1tXtBsHxrT-ARHp7hKh4FzKAnfhj0pToMWufEk0od7FY'
+        };
 
         // Format numbers with commas
         function formatNumber(num) {
             if (num === null || num === undefined || isNaN(num)) return '--';
             return num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+        }
+
+        // Parse numbers with comma separators
+        function parseNum(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            if (typeof val === 'number') return val;
+            const cleaned = String(val).replace(/,/g, '');
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
+        // Show toast notification
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast show ' + type;
+            setTimeout(() => toast.classList.remove('show'), 3000);
         }
 
         // Tab switching
@@ -658,67 +1178,7 @@
             });
         });
 
-        // Google Sheets IDs (where Metabase uploads data via Gmail)
-        const SHEETS = {
-            inventory: '1sloqBYcpvymJCszFtrk_QM_EmhB3uSmJ93bYfFBET0o',
-            consumption: '1O3ERZ7iq-MRlRmGTlgb7nHJ339r1JVz0VjdJQ1iGvyw',
-            inwarded: '1tXtBsHxrT-ARHp7hKh4FzKAnfhj0pToMWufEk0od7FY'
-        };
-
-        // Load from Google Sheets (published as CSV)
-        async function loadFromGoogleSheet(sheetId) {
-            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-            return new Promise((resolve, reject) => {
-                console.log('Loading from Google Sheet:', sheetId);
-                Papa.parse(url, {
-                    download: true,
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true,
-                    complete: (results) => {
-                        console.log('Loaded:', results.data.length, 'rows');
-                        resolve(results.data);
-                    },
-                    error: (error) => {
-                        console.error('Error loading sheet:', error);
-                        reject(error);
-                    }
-                });
-            });
-        }
-
-        // Load from local CSV files (fallback)
-        async function loadCSV(filename) {
-            return new Promise((resolve, reject) => {
-                console.log('Loading:', filename);
-                Papa.parse(filename, {
-                    download: true,
-                    header: true,
-                    dynamicTyping: true,
-                    skipEmptyLines: true,
-                    complete: (results) => {
-                        console.log('Loaded:', filename, results.data.length, 'rows');
-                        resolve(results.data);
-                    },
-                    error: (error) => {
-                        console.error('Error loading:', filename, error);
-                        reject(error);
-                    }
-                });
-            });
-        }
-
-        // Helper to parse numbers that may have commas as thousand separators
-        function parseNum(val) {
-            if (val === null || val === undefined || val === '') return 0;
-            if (typeof val === 'number') return val;
-            // Remove commas and parse
-            const cleaned = String(val).replace(/,/g, '');
-            const num = parseFloat(cleaned);
-            return isNaN(num) ? 0 : num;
-        }
-
-        // Helper function to get inventory row values (supports both old and new column names)
+        // Helper functions for column mapping
         function getInventoryValue(row, field) {
             const mappings = {
                 category: row['Row Labels'] || row['Category'] || row['CATEGORY'] || '',
@@ -731,22 +1191,73 @@
             return mappings[field];
         }
 
+        function getConsumptionValue(row, field) {
+            const mappings = {
+                product: (row['product_barcode'] || row['Product Barcode'] || row['PRODUCT_BARCODE'] || row['product_name'] || '').toString().trim(),
+                year: parseNum(row['balance_year'] || row['Balance Year'] || row['year'] || row['Year']),
+                month: parseNum(row['balance_month'] || row['Balance Month'] || row['month'] || row['Month']),
+                consumption: parseNum(row['total_consumption'] || row['Total Consumption'] || row['consumption'] || row['Consumption'])
+            };
+            return mappings[field];
+        }
+
+        function getInwardedValue(row, field) {
+            const mappings = {
+                date: row['Date'] || row['date: Day'] || row['date'] || '',
+                product: row['Part No'] || row['product_name'] || row['Product Name'] || row['PRODUCT_NAME'] || '',
+                vendor: row['name'] || row['vendor_name'] || row['Vendor Name'] || row['VENDOR_NAME'] || '',
+                lot: row['Location Moved'] || row['lot_name'] || row['Lot Name'] || row['LOT_NAME'] || '',
+                inward_qty: parseNum(row['Qty'] || row['Sum of inward_qty'] || row['inward_qty'] || row['Inward Qty']),
+                net_qty: parseNum(row['Qty'] || row['Sum of net_qty'] || row['net_qty'] || row['Net Qty']),
+                unit_price: parseNum(row['price'] || row['Average of unit_price_inr'] || row['avg_unit_price'] || row['unit_price_inr'] || row['Unit Price']),
+                total_value: parseNum(row['total_value'] || row['Total Value']),
+                po_number: row['po_number'] || row['PO Number'] || ''
+            };
+            return mappings[field];
+        }
+
+        // Load from Google Sheets
+        async function loadFromGoogleSheet(sheetId) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            return new Promise((resolve, reject) => {
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => resolve(results.data),
+                    error: (error) => reject(error)
+                });
+            });
+        }
+
+        // Load from local CSV
+        async function loadCSV(filename) {
+            return new Promise((resolve, reject) => {
+                Papa.parse(filename, {
+                    download: true,
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => resolve(results.data),
+                    error: (error) => reject(error)
+                });
+            });
+        }
+
         // Initialize dashboard
         async function init() {
             try {
                 console.log('Starting data load...');
 
-                // Try loading from Google Sheets first, fallback to local CSV
                 try {
-                    console.log('Attempting to load from Google Sheets...');
                     [inventoryData, consumptionData, inwardedData] = await Promise.all([
                         loadFromGoogleSheet(SHEETS.inventory),
                         loadFromGoogleSheet(SHEETS.consumption),
                         loadFromGoogleSheet(SHEETS.inwarded)
                     ]);
-                    console.log('Loaded from Google Sheets successfully!');
                 } catch (sheetError) {
-                    console.log('Google Sheets failed, loading from local CSV files...', sheetError);
+                    console.log('Google Sheets failed, loading from local CSV...');
                     [inventoryData, consumptionData, inwardedData] = await Promise.all([
                         loadCSV('inventory_qty_data.csv'),
                         loadCSV('consumption_mom_data.csv'),
@@ -754,97 +1265,291 @@
                     ]);
                 }
 
-                console.log('All data loaded!');
+                // Debug logging
+                if (inventoryData.length > 0) console.log('Inventory columns:', Object.keys(inventoryData[0]));
+                if (consumptionData.length > 0) console.log('Consumption columns:', Object.keys(consumptionData[0]));
+                if (inwardedData.length > 0) console.log('Inwarded columns:', Object.keys(inwardedData[0]));
 
-                // Debug: Log column names from first row of each dataset
-                if (inventoryData.length > 0) {
-                    console.log('Inventory columns:', Object.keys(inventoryData[0]));
-                }
-                if (consumptionData.length > 0) {
-                    console.log('Consumption columns:', Object.keys(consumptionData[0]));
-                }
-                if (inwardedData.length > 0) {
-                    console.log('Inwarded columns:', Object.keys(inwardedData[0]));
-                }
-
-                // Update last updated timestamp
                 document.getElementById('last-updated').textContent = new Date().toLocaleString();
 
-                // Calculate DoC data
                 calculateDoC();
+                calculateConsumptionSpikes();
+                generateAlerts();
 
-                // Render all tabs
+                renderAlertsTab();
                 renderInventoryTab();
                 renderConsumptionTab();
                 renderDocTab();
                 renderInwardedTab();
-
-                // Update header stats
                 updateHeaderStats();
 
             } catch (error) {
                 console.error('Error loading data:', error);
-                alert('Error loading data files. Make sure CSV files are in the same directory.');
+                showToast('Error loading data. Check console for details.', 'error');
             }
         }
 
         // Calculate Days of Cover
         function calculateDoC() {
-            // Get latest consumption per product
             const latestConsumption = {};
+            const previousConsumption = {};
+
             consumptionData.forEach(row => {
-                const product = row.product_barcode || row['Product Barcode'] || row['PRODUCT_BARCODE'];
-                const year = row.balance_year || row['Balance Year'] || row['year'];
-                const month = row.balance_month || row['Balance Month'] || row['month'];
+                const product = getConsumptionValue(row, 'product');
+                const year = getConsumptionValue(row, 'year');
+                const month = getConsumptionValue(row, 'month');
                 const monthYear = `${year}-${String(month).padStart(2, '0')}`;
-                const consumption = row.total_consumption || row['Total Consumption'] || row['consumption'] || 0;
+                const consumption = getConsumptionValue(row, 'consumption');
 
                 if (!latestConsumption[product] || monthYear > latestConsumption[product].monthYear) {
-                    latestConsumption[product] = {
-                        monthYear: monthYear,
-                        consumption: consumption
-                    };
+                    if (latestConsumption[product]) {
+                        previousConsumption[product] = latestConsumption[product];
+                    }
+                    latestConsumption[product] = { monthYear, consumption };
+                } else if (!previousConsumption[product] || monthYear > previousConsumption[product].monthYear) {
+                    previousConsumption[product] = { monthYear, consumption };
                 }
             });
 
-            // Match with inventory
             docData = inventoryData.map(inv => {
                 const product = getInventoryValue(inv, 'product');
                 const unrestricted = getInventoryValue(inv, 'unrestricted') || 0;
                 const restricted = getInventoryValue(inv, 'restricted') || 0;
                 const totalStock = unrestricted + restricted;
                 const consumption = latestConsumption[product]?.consumption || 0;
-                const drr = consumption / 30; // Daily run rate
+                const prevConsumption = previousConsumption[product]?.consumption || 0;
+                const drr = consumption / 30;
                 const doc = drr > 0 ? totalStock / drr : null;
 
                 return {
-                    product: product,
+                    product,
                     category: getInventoryValue(inv, 'category'),
                     stock: totalStock,
+                    unrestricted,
+                    restricted,
                     monthlyConsumption: consumption,
-                    drr: drr,
-                    doc: doc
+                    prevConsumption,
+                    drr,
+                    doc
                 };
             });
         }
 
-        // Update header statistics
+        // Calculate consumption spikes
+        function calculateConsumptionSpikes() {
+            consumptionSpikes = [];
+            const byProduct = {};
+
+            consumptionData.forEach(row => {
+                const product = getConsumptionValue(row, 'product');
+                const year = getConsumptionValue(row, 'year');
+                const month = getConsumptionValue(row, 'month');
+                const consumption = getConsumptionValue(row, 'consumption');
+                const key = `${year}-${String(month).padStart(2, '0')}`;
+
+                if (!byProduct[product]) byProduct[product] = {};
+                byProduct[product][key] = consumption;
+            });
+
+            Object.entries(byProduct).forEach(([product, months]) => {
+                const sortedMonths = Object.keys(months).sort();
+                if (sortedMonths.length >= 2) {
+                    const latest = months[sortedMonths[sortedMonths.length - 1]];
+                    const previous = months[sortedMonths[sortedMonths.length - 2]];
+                    if (previous > 0 && latest > previous * 1.5) {
+                        consumptionSpikes.push({
+                            product,
+                            current: latest,
+                            previous,
+                            change: ((latest - previous) / previous * 100).toFixed(1)
+                        });
+                    }
+                }
+            });
+        }
+
+        // Generate alerts
+        function generateAlerts() {
+            alertsData = [];
+
+            // Critical DoC items
+            docData.filter(d => d.doc !== null && d.doc > 0 && d.doc < 7).forEach(d => {
+                alertsData.push({
+                    type: 'critical',
+                    typeLabel: 'Critical DoC',
+                    product: d.product,
+                    category: d.category,
+                    stock: d.stock,
+                    doc: d.doc,
+                    consumption: d.monthlyConsumption,
+                    message: `Only ${Math.round(d.doc)} days of stock remaining`
+                });
+            });
+
+            // Zero stock items
+            docData.filter(d => d.stock === 0 && d.monthlyConsumption > 0).forEach(d => {
+                alertsData.push({
+                    type: 'zero',
+                    typeLabel: 'Zero Stock',
+                    product: d.product,
+                    category: d.category,
+                    stock: 0,
+                    doc: 0,
+                    consumption: d.monthlyConsumption,
+                    message: 'Out of stock with active consumption'
+                });
+            });
+
+            // Consumption spikes
+            consumptionSpikes.forEach(s => {
+                const docItem = docData.find(d => d.product === s.product);
+                alertsData.push({
+                    type: 'spike',
+                    typeLabel: 'Consumption Spike',
+                    product: s.product,
+                    category: docItem?.category || '',
+                    stock: docItem?.stock || 0,
+                    doc: docItem?.doc,
+                    consumption: s.current,
+                    change: s.change,
+                    message: `${s.change}% increase vs last month`
+                });
+            });
+
+            // Low stock items
+            docData.filter(d => d.doc !== null && d.doc >= 7 && d.doc < 30).forEach(d => {
+                alertsData.push({
+                    type: 'low',
+                    typeLabel: 'Low Stock',
+                    product: d.product,
+                    category: d.category,
+                    stock: d.stock,
+                    doc: d.doc,
+                    consumption: d.monthlyConsumption,
+                    message: `${Math.round(d.doc)} days of stock - plan reorder`
+                });
+            });
+
+            // Update badge
+            const totalAlerts = alertsData.filter(a => a.type === 'critical' || a.type === 'zero').length;
+            const badge = document.getElementById('alerts-badge');
+            if (totalAlerts > 0) {
+                badge.style.display = 'inline';
+                badge.textContent = totalAlerts;
+            }
+        }
+
+        // Update header stats
         function updateHeaderStats() {
             document.getElementById('total-skus').textContent = formatNumber(inventoryData.length);
-
             const lowStock = docData.filter(d => d.doc !== null && d.doc < 30 && d.doc > 0).length;
             document.getElementById('low-stock-count').textContent = formatNumber(lowStock);
-
             const validDocs = docData.filter(d => d.doc !== null && d.doc > 0);
-            const avgDoc = validDocs.length > 0
-                ? validDocs.reduce((sum, d) => sum + d.doc, 0) / validDocs.length
-                : 0;
+            const avgDoc = validDocs.length > 0 ? validDocs.reduce((sum, d) => sum + d.doc, 0) / validDocs.length : 0;
             document.getElementById('avg-doc').textContent = formatNumber(Math.round(avgDoc));
+        }
+
+        // Render Alerts Tab
+        function renderAlertsTab() {
+            const critical = alertsData.filter(a => a.type === 'critical').length;
+            const zero = alertsData.filter(a => a.type === 'zero').length;
+            const spike = alertsData.filter(a => a.type === 'spike').length;
+            const low = alertsData.filter(a => a.type === 'low').length;
+
+            document.getElementById('alert-critical-count').textContent = critical;
+            document.getElementById('alert-zero-count').textContent = zero;
+            document.getElementById('alert-spike-count').textContent = spike;
+            document.getElementById('alert-low-count').textContent = low;
+
+            renderAlertsTable(alertsData);
+
+            document.getElementById('alerts-search').addEventListener('input', (e) => {
+                const search = e.target.value.toLowerCase();
+                let filtered = currentAlertFilter
+                    ? alertsData.filter(a => a.type === currentAlertFilter)
+                    : alertsData;
+                filtered = filtered.filter(a =>
+                    a.product.toLowerCase().includes(search) ||
+                    a.category.toLowerCase().includes(search)
+                );
+                renderAlertsTable(filtered);
+            });
+
+            // Show alerts panel if critical items exist
+            if (critical > 0 || zero > 0) {
+                const panel = document.getElementById('alerts-panel');
+                panel.classList.add('has-alerts');
+                const items = document.getElementById('alert-items');
+                items.innerHTML = '';
+
+                if (critical > 0) {
+                    items.innerHTML += `<div class="alert-item critical">
+                        <span><strong>${critical}</strong> items with critical stock levels (&lt;7 days)</span>
+                        <button class="alert-action" onclick="filterByAlertType('critical')">View Items</button>
+                    </div>`;
+                }
+                if (zero > 0) {
+                    items.innerHTML += `<div class="alert-item critical">
+                        <span><strong>${zero}</strong> items are out of stock</span>
+                        <button class="alert-action" onclick="filterByAlertType('zero')">View Items</button>
+                    </div>`;
+                }
+                if (spike > 0) {
+                    items.innerHTML += `<div class="alert-item warning">
+                        <span><strong>${spike}</strong> items have consumption spikes (&gt;50%)</span>
+                        <button class="alert-action" onclick="filterByAlertType('spike')">View Items</button>
+                    </div>`;
+                }
+            }
+        }
+
+        function renderAlertsTable(data) {
+            const tbody = document.getElementById('alerts-tbody');
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#666;">No alerts found</td></tr>';
+                return;
+            }
+            tbody.innerHTML = data.map(row => `
+                <tr class="clickable" onclick="showProductDetail('${row.product}')">
+                    <td><span class="status-badge ${row.type === 'critical' || row.type === 'zero' ? 'status-critical' : row.type === 'low' ? 'status-low' : 'status-ok'}">${row.typeLabel}</span></td>
+                    <td>${row.product}</td>
+                    <td>${row.category}</td>
+                    <td class="align-right">${formatNumber(row.stock)}</td>
+                    <td class="align-right">${row.doc !== null ? Math.round(row.doc) : '--'}</td>
+                    <td class="align-right">${formatNumber(row.consumption)}${row.change ? ` <span class="spike-indicator">${row.change}%</span>` : ''}</td>
+                    <td><button class="btn btn-secondary" onclick="event.stopPropagation(); navigateToDoc('${row.product}')">View DoC</button></td>
+                </tr>
+            `).join('');
+        }
+
+        function filterByAlertType(type) {
+            currentAlertFilter = type;
+            const filtered = alertsData.filter(a => a.type === type);
+            renderAlertsTable(filtered);
+
+            document.getElementById('active-filters').style.display = 'flex';
+            const labels = { critical: 'Critical DoC', zero: 'Zero Stock', spike: 'Consumption Spikes', low: 'Low Stock' };
+            document.getElementById('filter-text').textContent = labels[type];
+
+            // Navigate to alerts tab
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="alerts"]').classList.add('active');
+            document.getElementById('alerts-tab').classList.add('active');
+        }
+
+        function clearAlertFilter() {
+            currentAlertFilter = null;
+            document.getElementById('active-filters').style.display = 'none';
+            renderAlertsTable(alertsData);
+        }
+
+        function dismissAlerts() {
+            document.getElementById('alerts-panel').classList.remove('has-alerts');
         }
 
         // Render Inventory Tab
         function renderInventoryTab() {
-            // Calculate totals using helper function
             const totalUnrestricted = inventoryData.reduce((sum, row) => sum + (getInventoryValue(row, 'unrestricted') || 0), 0);
             const totalRestricted = inventoryData.reduce((sum, row) => sum + (getInventoryValue(row, 'restricted') || 0), 0);
             const categories = [...new Set(inventoryData.map(row => getInventoryValue(row, 'category')))];
@@ -858,16 +1563,14 @@
             document.getElementById('total-categories').textContent = categories.length;
             document.getElementById('zero-stock').textContent = zeroStock;
 
-            // Category chart
+            // Category chart with click handler
             const categoryData = {};
             inventoryData.forEach(row => {
                 const cat = getInventoryValue(row, 'category') || 'Unknown';
                 categoryData[cat] = (categoryData[cat] || 0) + (getInventoryValue(row, 'unrestricted') || 0);
             });
 
-            const sortedCategories = Object.entries(categoryData)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 10);
+            const sortedCategories = Object.entries(categoryData).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
             if (charts.inventoryCategory) charts.inventoryCategory.destroy();
             charts.inventoryCategory = new Chart(document.getElementById('inventoryCategoryChart'), {
@@ -876,17 +1579,18 @@
                     labels: sortedCategories.map(c => c[0]),
                     datasets: [{
                         data: sortedCategories.map(c => c[1]),
-                        backgroundColor: [
-                            '#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444',
-                            '#8b5cf6', '#06b6d4', '#84cc16', '#f97316', '#ec4899'
-                        ]
+                        backgroundColor: ['#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316', '#ec4899']
                     }]
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const category = sortedCategories[elements[0].index][0];
+                            filterInventoryByCategory(category);
+                        }
+                    },
+                    plugins: { legend: { position: 'right' } }
                 }
             });
 
@@ -909,22 +1613,89 @@
                 options: {
                     responsive: true,
                     indexAxis: 'y',
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const product = topProducts[elements[0].index];
+                            showProductDetail(getInventoryValue(product, 'product'));
+                        }
+                    },
                     plugins: { legend: { display: false } }
                 }
             });
 
-            // Render table
             renderInventoryTable(inventoryData);
 
-            // Search functionality
             document.getElementById('inventory-search').addEventListener('input', (e) => {
                 const search = e.target.value.toLowerCase();
-                const filtered = inventoryData.filter(row =>
+                let filtered = currentInventoryFilter ? applyInventoryFilter(inventoryData) : inventoryData;
+                filtered = filtered.filter(row =>
                     (getInventoryValue(row, 'product') || '').toLowerCase().includes(search) ||
                     (getInventoryValue(row, 'category') || '').toLowerCase().includes(search)
                 );
                 renderInventoryTable(filtered);
             });
+        }
+
+        function applyInventoryFilter(data) {
+            if (!currentInventoryFilter) return data;
+            if (currentInventoryFilter.type === 'category') {
+                return data.filter(row => getInventoryValue(row, 'category') === currentInventoryFilter.value);
+            }
+            if (currentInventoryFilter.type === 'zero') {
+                return data.filter(row =>
+                    (getInventoryValue(row, 'unrestricted') || 0) === 0 &&
+                    (getInventoryValue(row, 'restricted') || 0) === 0
+                );
+            }
+            if (currentInventoryFilter.type === 'restricted') {
+                return data.filter(row => (getInventoryValue(row, 'restricted') || 0) > 0);
+            }
+            return data;
+        }
+
+        function filterInventoryByCategory(category) {
+            currentInventoryFilter = { type: 'category', value: category };
+            document.getElementById('inventory-filter-label').textContent = `(Category: ${category})`;
+            renderInventoryTable(applyInventoryFilter(inventoryData));
+        }
+
+        function filterInventoryByType(type) {
+            if (type === 'all') {
+                clearInventoryFilter();
+                return;
+            }
+            currentInventoryFilter = { type };
+            const labels = { zero: 'Zero Stock', restricted: 'With Restricted' };
+            document.getElementById('inventory-filter-label').textContent = `(${labels[type]})`;
+            renderInventoryTable(applyInventoryFilter(inventoryData));
+        }
+
+        function clearInventoryFilter() {
+            currentInventoryFilter = null;
+            document.getElementById('inventory-filter-label').textContent = '';
+            document.getElementById('inventory-search').value = '';
+            renderInventoryTable(inventoryData);
+        }
+
+        function sortInventory(field) {
+            if (inventorySortField === field) {
+                inventorySortDir = inventorySortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                inventorySortField = field;
+                inventorySortDir = 'asc';
+            }
+            let data = currentInventoryFilter ? applyInventoryFilter(inventoryData) : [...inventoryData];
+            data.sort((a, b) => {
+                let aVal = getInventoryValue(a, field);
+                let bVal = getInventoryValue(b, field);
+                if (field === 'total') {
+                    aVal = (getInventoryValue(a, 'restricted') || 0) + (getInventoryValue(a, 'unrestricted') || 0);
+                    bVal = (getInventoryValue(b, 'restricted') || 0) + (getInventoryValue(b, 'unrestricted') || 0);
+                }
+                if (typeof aVal === 'string') return inventorySortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                return inventorySortDir === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+            renderInventoryTable(data);
         }
 
         function renderInventoryTable(data) {
@@ -933,7 +1704,7 @@
                 const restricted = getInventoryValue(row, 'restricted') || 0;
                 const unrestricted = getInventoryValue(row, 'unrestricted') || 0;
                 return `
-                <tr>
+                <tr class="clickable" onclick="showProductDetail('${getInventoryValue(row, 'product')}')">
                     <td>${getInventoryValue(row, 'category') || ''}</td>
                     <td>${getInventoryValue(row, 'product') || ''}</td>
                     <td class="align-right number-format">${formatNumber(restricted)}</td>
@@ -943,20 +1714,8 @@
             `}).join('');
         }
 
-        // Helper function to get consumption row values (supports multiple column name formats)
-        function getConsumptionValue(row, field) {
-            const mappings = {
-                product: (row['product_barcode'] || row['Product Barcode'] || row['PRODUCT_BARCODE'] || row['product_name'] || '').toString().trim(),
-                year: parseNum(row['balance_year'] || row['Balance Year'] || row['year'] || row['Year']),
-                month: parseNum(row['balance_month'] || row['Balance Month'] || row['month'] || row['Month']),
-                consumption: parseNum(row['total_consumption'] || row['Total Consumption'] || row['consumption'] || row['Consumption'])
-            };
-            return mappings[field];
-        }
-
         // Render Consumption Tab
         function renderConsumptionTab() {
-            // Get unique years and months
             const years = [...new Set(consumptionData.map(r => getConsumptionValue(r, 'year')))].filter(y => y).sort((a, b) => b - a);
             const months = [...new Set(consumptionData.map(r => getConsumptionValue(r, 'month')))].filter(m => m).sort((a, b) => a - b);
 
@@ -977,7 +1736,6 @@
                 monthSelect.appendChild(opt);
             });
 
-            // Latest month stats
             const latestYear = Math.max(...years);
             const latestMonth = Math.max(...consumptionData.filter(r => getConsumptionValue(r, 'year') === latestYear).map(r => getConsumptionValue(r, 'month')));
             const latestData = consumptionData.filter(r => getConsumptionValue(r, 'year') === latestYear && getConsumptionValue(r, 'month') === latestMonth);
@@ -989,7 +1747,7 @@
             document.getElementById('total-consumption').textContent = formatNumber(totalConsumption);
             document.getElementById('avg-drr').textContent = formatNumber(avgDRR);
             document.getElementById('active-products').textContent = activeProducts;
-            document.getElementById('months-data').textContent = years.length * 12;
+            document.getElementById('consumption-spikes').textContent = consumptionSpikes.length;
 
             // Monthly trend chart
             const monthlyTotals = {};
@@ -1019,16 +1777,12 @@
                 options: {
                     responsive: true,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
-            // Render table with DRR
             renderConsumptionTable(consumptionData);
 
-            // Filters and search
             const filterConsumption = () => {
                 const year = document.getElementById('consumption-year-filter').value;
                 const month = document.getElementById('consumption-month-filter').value;
@@ -1047,17 +1801,28 @@
             document.getElementById('consumption-search').addEventListener('input', filterConsumption);
         }
 
+        function showConsumptionSpikes() {
+            // Filter to show only spike products
+            const spikeProducts = consumptionSpikes.map(s => s.product);
+            const filtered = consumptionData.filter(r => spikeProducts.includes(getConsumptionValue(r, 'product')));
+            renderConsumptionTable(filtered);
+            showToast(`Showing ${consumptionSpikes.length} products with consumption spikes`, 'info');
+        }
+
         function renderConsumptionTable(data) {
             const tbody = document.getElementById('consumption-tbody');
             tbody.innerHTML = data.slice(0, 500).map(row => {
                 const consumption = getConsumptionValue(row, 'consumption') || 0;
                 const drr = consumption / 30;
+                const product = getConsumptionValue(row, 'product');
+                const spike = consumptionSpikes.find(s => s.product === product);
                 return `
-                    <tr>
+                    <tr class="clickable" onclick="showProductDetail('${product}')">
                         <td>${getConsumptionValue(row, 'month')}/${getConsumptionValue(row, 'year')}</td>
-                        <td>${getConsumptionValue(row, 'product') || ''}</td>
+                        <td>${product || ''}</td>
                         <td class="align-right number-format">${formatNumber(consumption)}</td>
                         <td class="align-right number-format">${formatNumber(drr)}</td>
+                        <td class="align-right">${spike ? `<span class="spike-indicator">${spike.change}%</span>` : '--'}</td>
                     </tr>
                 `;
             }).join('');
@@ -1075,7 +1840,6 @@
             document.getElementById('healthy-stock').textContent = healthy;
             document.getElementById('no-consumption').textContent = noData;
 
-            // Distribution chart
             if (charts.docDistribution) charts.docDistribution.destroy();
             charts.docDistribution = new Chart(document.getElementById('docDistributionChart'), {
                 type: 'pie',
@@ -1088,13 +1852,16 @@
                 },
                 options: {
                     responsive: true,
-                    plugins: {
-                        legend: { position: 'right' }
-                    }
+                    onClick: (e, elements) => {
+                        if (elements.length > 0) {
+                            const statuses = ['critical', 'low', 'healthy', 'nodata'];
+                            filterDocByStatus(statuses[elements[0].index]);
+                        }
+                    },
+                    plugins: { legend: { position: 'right' } }
                 }
             });
 
-            // Sort by DoC (critical first)
             const sortedDoc = [...docData].sort((a, b) => {
                 if (a.doc === null) return 1;
                 if (b.doc === null) return -1;
@@ -1105,11 +1872,54 @@
 
             document.getElementById('doc-search').addEventListener('input', (e) => {
                 const search = e.target.value.toLowerCase();
-                const filtered = sortedDoc.filter(row =>
-                    (row.product || '').toLowerCase().includes(search)
-                );
+                let filtered = currentDocFilter ? applyDocFilter(sortedDoc) : sortedDoc;
+                filtered = filtered.filter(row => (row.product || '').toLowerCase().includes(search));
                 renderDocTable(filtered);
             });
+        }
+
+        function applyDocFilter(data) {
+            if (!currentDocFilter) return data;
+            switch (currentDocFilter) {
+                case 'critical': return data.filter(d => d.doc !== null && d.doc > 0 && d.doc < 7);
+                case 'low': return data.filter(d => d.doc !== null && d.doc >= 7 && d.doc < 30);
+                case 'healthy': return data.filter(d => d.doc !== null && d.doc >= 30);
+                case 'nodata': return data.filter(d => d.doc === null || d.monthlyConsumption === 0);
+                default: return data;
+            }
+        }
+
+        function filterDocByStatus(status) {
+            currentDocFilter = status;
+            const labels = { critical: 'Critical', low: 'Low Stock', healthy: 'Healthy', nodata: 'No Data' };
+            document.getElementById('doc-filter-label').textContent = `(${labels[status]})`;
+            renderDocTable(applyDocFilter(docData));
+        }
+
+        function clearDocFilter() {
+            currentDocFilter = null;
+            document.getElementById('doc-filter-label').textContent = '';
+            document.getElementById('doc-search').value = '';
+            renderDocTable(docData);
+        }
+
+        function sortDoc(field) {
+            if (docSortField === field) {
+                docSortDir = docSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                docSortField = field;
+                docSortDir = 'asc';
+            }
+            let data = currentDocFilter ? applyDocFilter(docData) : [...docData];
+            data.sort((a, b) => {
+                let aVal = a[field];
+                let bVal = b[field];
+                if (aVal === null) return 1;
+                if (bVal === null) return -1;
+                if (typeof aVal === 'string') return docSortDir === 'asc' ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+                return docSortDir === 'asc' ? aVal - bVal : bVal - aVal;
+            });
+            renderDocTable(data);
         }
 
         function renderDocTable(data) {
@@ -1130,7 +1940,7 @@
                 }
 
                 return `
-                    <tr>
+                    <tr class="clickable" onclick="showProductDetail('${row.product}')">
                         <td>${row.product || ''}</td>
                         <td class="align-right number-format">${formatNumber(row.stock)}</td>
                         <td class="align-right number-format">${formatNumber(row.monthlyConsumption)}</td>
@@ -1142,35 +1952,16 @@
             }).join('');
         }
 
-        // Helper function to get inwarded row values (supports both old and new column names)
-        function getInwardedValue(row, field) {
-            const mappings = {
-                date: row['Date'] || row['date: Day'] || row['date'] || '',
-                product: row['Part No'] || row['product_name'] || row['Product Name'] || row['PRODUCT_NAME'] || '',
-                vendor: row['name'] || row['vendor_name'] || row['Vendor Name'] || row['VENDOR_NAME'] || '',
-                lot: row['Location Moved'] || row['lot_name'] || row['Lot Name'] || row['LOT_NAME'] || '',
-                inward_qty: parseNum(row['Qty'] || row['Sum of inward_qty'] || row['inward_qty'] || row['Inward Qty']),
-                net_qty: parseNum(row['Qty'] || row['Sum of net_qty'] || row['net_qty'] || row['Net Qty']),
-                unit_price: parseNum(row['price'] || row['Average of unit_price_inr'] || row['avg_unit_price'] || row['unit_price_inr'] || row['Unit Price']),
-                total_value: parseNum(row['total_value'] || row['Total Value']),
-                po_number: row['po_number'] || row['PO Number'] || ''
-            };
-            return mappings[field];
-        }
-
         // Render Inwarded Tab
         function renderInwardedTab() {
             const totalInwarded = inwardedData.reduce((sum, r) => sum + (getInwardedValue(r, 'inward_qty') || 0), 0);
             const totalValue = inwardedData.reduce((sum, r) => {
                 const value = getInwardedValue(r, 'total_value');
                 if (value) return sum + value;
-                const qty = getInwardedValue(r, 'inward_qty') || 0;
-                const price = getInwardedValue(r, 'unit_price') || 0;
-                return sum + (qty * price);
+                return sum + ((getInwardedValue(r, 'inward_qty') || 0) * (getInwardedValue(r, 'unit_price') || 0));
             }, 0);
             const vendors = [...new Set(inwardedData.map(r => getInwardedValue(r, 'vendor')))].filter(v => v);
 
-            // Recent receipts (last 7 days)
             const dates = inwardedData.map(r => getInwardedValue(r, 'date')).filter(d => d);
             let recentReceipts = 0;
             if (dates.length > 0) {
@@ -1191,7 +1982,6 @@
             document.getElementById('unique-vendors').textContent = vendors.length;
             document.getElementById('recent-receipts').textContent = recentReceipts;
 
-            // Populate vendor filter
             const vendorSelect = document.getElementById('vendor-filter');
             vendors.sort().forEach(v => {
                 if (v) {
@@ -1202,7 +1992,6 @@
                 }
             });
 
-            // Daily trend chart
             const dailyTotals = {};
             inwardedData.forEach(row => {
                 const date = getInwardedValue(row, 'date');
@@ -1227,15 +2016,12 @@
                 options: {
                     responsive: true,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        y: { beginAtZero: true }
-                    }
+                    scales: { y: { beginAtZero: true } }
                 }
             });
 
             renderInwardedTable(inwardedData);
 
-            // Filters
             const filterInwarded = () => {
                 const dateFrom = document.getElementById('inward-date-from').value;
                 const dateTo = document.getElementById('inward-date-to').value;
@@ -1277,7 +2063,198 @@
             `}).join('');
         }
 
-        // Initialize on load
+        // Product Detail Modal
+        function showProductDetail(productName) {
+            const invItem = inventoryData.find(r => getInventoryValue(r, 'product') === productName);
+            const docItem = docData.find(d => d.product === productName);
+            const consumptionHistory = consumptionData.filter(r => getConsumptionValue(r, 'product') === productName);
+
+            document.getElementById('modal-product-name').textContent = productName;
+
+            const details = document.getElementById('modal-details');
+            details.innerHTML = `
+                <div class="detail-item">
+                    <div class="detail-label">Category</div>
+                    <div class="detail-value">${docItem?.category || getInventoryValue(invItem, 'category') || '--'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Unrestricted Stock</div>
+                    <div class="detail-value">${formatNumber(docItem?.unrestricted || getInventoryValue(invItem, 'unrestricted'))}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Restricted Stock</div>
+                    <div class="detail-value">${formatNumber(docItem?.restricted || getInventoryValue(invItem, 'restricted'))}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Total Stock</div>
+                    <div class="detail-value">${formatNumber(docItem?.stock)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Monthly Consumption</div>
+                    <div class="detail-value">${formatNumber(docItem?.monthlyConsumption)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Daily Run Rate (DRR)</div>
+                    <div class="detail-value">${formatNumber(docItem?.drr)}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Days of Cover</div>
+                    <div class="detail-value" style="color: ${docItem?.doc < 7 ? '#ef4444' : docItem?.doc < 30 ? '#f59e0b' : '#10b981'}">${docItem?.doc ? Math.round(docItem.doc) + ' days' : '--'}</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">Status</div>
+                    <div class="detail-value">${docItem?.doc < 7 ? '<span class="status-badge status-critical">Critical</span>' : docItem?.doc < 30 ? '<span class="status-badge status-low">Low</span>' : '<span class="status-badge status-ok">Healthy</span>'}</div>
+                </div>
+            `;
+
+            // Render consumption history chart
+            if (consumptionHistory.length > 0) {
+                const monthlyData = {};
+                consumptionHistory.forEach(r => {
+                    const key = `${getConsumptionValue(r, 'year')}-${String(getConsumptionValue(r, 'month')).padStart(2, '0')}`;
+                    monthlyData[key] = getConsumptionValue(r, 'consumption');
+                });
+                const sortedKeys = Object.keys(monthlyData).sort().slice(-12);
+
+                if (charts.modalConsumption) charts.modalConsumption.destroy();
+                charts.modalConsumption = new Chart(document.getElementById('modalConsumptionChart'), {
+                    type: 'bar',
+                    data: {
+                        labels: sortedKeys,
+                        datasets: [{
+                            label: 'Monthly Consumption',
+                            data: sortedKeys.map(k => monthlyData[k]),
+                            backgroundColor: '#667eea'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } },
+                        scales: { y: { beginAtZero: true } }
+                    }
+                });
+                document.getElementById('modal-chart-container').style.display = 'block';
+            } else {
+                document.getElementById('modal-chart-container').style.display = 'none';
+            }
+
+            document.getElementById('product-modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('product-modal').classList.remove('active');
+        }
+
+        function navigateToDoc(product) {
+            document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelector('[data-tab="doc"]').classList.add('active');
+            document.getElementById('doc-tab').classList.add('active');
+            document.getElementById('doc-search').value = product;
+            const filtered = docData.filter(d => d.product.toLowerCase().includes(product.toLowerCase()));
+            renderDocTable(filtered);
+        }
+
+        // Export functions
+        function exportToCSV(data, filename, headers) {
+            const csv = [headers.join(',')];
+            data.forEach(row => {
+                csv.push(headers.map(h => {
+                    const val = row[h] ?? '';
+                    return typeof val === 'string' && val.includes(',') ? `"${val}"` : val;
+                }).join(','));
+            });
+            const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            a.click();
+            showToast(`Exported ${data.length} rows to ${filename}`, 'success');
+        }
+
+        function exportAlerts() {
+            const data = (currentAlertFilter ? alertsData.filter(a => a.type === currentAlertFilter) : alertsData).map(a => ({
+                'Alert Type': a.typeLabel,
+                'Product': a.product,
+                'Category': a.category,
+                'Current Stock': a.stock,
+                'Days of Cover': a.doc ? Math.round(a.doc) : '',
+                'Monthly Consumption': a.consumption,
+                'Message': a.message
+            }));
+            exportToCSV(data, 'alerts_export.csv', ['Alert Type', 'Product', 'Category', 'Current Stock', 'Days of Cover', 'Monthly Consumption', 'Message']);
+        }
+
+        function exportInventory() {
+            const data = (currentInventoryFilter ? applyInventoryFilter(inventoryData) : inventoryData).map(row => ({
+                'Category': getInventoryValue(row, 'category'),
+                'Product': getInventoryValue(row, 'product'),
+                'Restricted': getInventoryValue(row, 'restricted'),
+                'Unrestricted': getInventoryValue(row, 'unrestricted'),
+                'Total': (getInventoryValue(row, 'restricted') || 0) + (getInventoryValue(row, 'unrestricted') || 0)
+            }));
+            exportToCSV(data, 'inventory_export.csv', ['Category', 'Product', 'Restricted', 'Unrestricted', 'Total']);
+        }
+
+        function exportConsumption() {
+            const year = document.getElementById('consumption-year-filter').value;
+            const month = document.getElementById('consumption-month-filter').value;
+            let filtered = consumptionData;
+            if (year) filtered = filtered.filter(r => getConsumptionValue(r, 'year') == year);
+            if (month) filtered = filtered.filter(r => getConsumptionValue(r, 'month') == month);
+
+            const data = filtered.map(row => ({
+                'Month': getConsumptionValue(row, 'month'),
+                'Year': getConsumptionValue(row, 'year'),
+                'Product': getConsumptionValue(row, 'product'),
+                'Consumption': getConsumptionValue(row, 'consumption'),
+                'DRR': (getConsumptionValue(row, 'consumption') / 30).toFixed(2)
+            }));
+            exportToCSV(data, 'consumption_export.csv', ['Month', 'Year', 'Product', 'Consumption', 'DRR']);
+        }
+
+        function exportDoc() {
+            const data = (currentDocFilter ? applyDocFilter(docData) : docData).map(row => ({
+                'Product': row.product,
+                'Category': row.category,
+                'Current Stock': row.stock,
+                'Monthly Consumption': row.monthlyConsumption,
+                'DRR': row.drr?.toFixed(2) || '',
+                'Days of Cover': row.doc ? Math.round(row.doc) : '',
+                'Status': row.doc === null ? 'No Data' : row.doc < 7 ? 'Critical' : row.doc < 30 ? 'Low' : 'Healthy'
+            }));
+            exportToCSV(data, 'days_of_cover_export.csv', ['Product', 'Category', 'Current Stock', 'Monthly Consumption', 'DRR', 'Days of Cover', 'Status']);
+        }
+
+        function exportInwarded() {
+            const dateFrom = document.getElementById('inward-date-from').value;
+            const dateTo = document.getElementById('inward-date-to').value;
+            const vendor = document.getElementById('vendor-filter').value;
+
+            let filtered = inwardedData;
+            if (dateFrom) filtered = filtered.filter(r => getInwardedValue(r, 'date') >= dateFrom);
+            if (dateTo) filtered = filtered.filter(r => getInwardedValue(r, 'date') <= dateTo);
+            if (vendor) filtered = filtered.filter(r => getInwardedValue(r, 'vendor') === vendor);
+
+            const data = filtered.map(row => ({
+                'Date': getInwardedValue(row, 'date'),
+                'Part No': getInwardedValue(row, 'product'),
+                'Vendor': getInwardedValue(row, 'vendor'),
+                'Location': getInwardedValue(row, 'lot'),
+                'Qty': getInwardedValue(row, 'inward_qty'),
+                'PO Number': getInwardedValue(row, 'po_number'),
+                'Price': getInwardedValue(row, 'unit_price')
+            }));
+            exportToCSV(data, 'rm_inwarded_export.csv', ['Date', 'Part No', 'Vendor', 'Location', 'Qty', 'PO Number', 'Price']);
+        }
+
+        // Close modal on click outside
+        document.getElementById('product-modal').addEventListener('click', (e) => {
+            if (e.target.id === 'product-modal') closeModal();
+        });
+
+        // Initialize
         init();
     </script>
 </body>
