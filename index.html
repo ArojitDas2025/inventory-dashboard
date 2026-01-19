@@ -708,6 +708,19 @@
             });
         }
 
+        // Helper function to get inventory row values (supports both old and new column names)
+        function getInventoryValue(row, field) {
+            const mappings = {
+                category: row['Row Labels'] || row['Category'] || row['CATEGORY'] || '',
+                product: row['PRODUCT_NAME'] || row['Product Name'] || row['product_name'] || '',
+                unrestricted: row['Unrestricted Inventory'] || row['Sum of Unrestricted Inventory'] || row['unrestricted_inventory'] || 0,
+                restricted: row['Restricted Inventory'] || row['Sum of Restricted Inventory'] || row['restricted_inventory'] || 0,
+                wip: row['WIP Inventory'] || row['wip_inventory'] || 0,
+                total: row['Grand Total'] || row['Total'] || 0
+            };
+            return mappings[field];
+        }
+
         // Initialize dashboard
         async function init() {
             try {
@@ -732,6 +745,17 @@
                 }
 
                 console.log('All data loaded!');
+
+                // Debug: Log column names from first row of each dataset
+                if (inventoryData.length > 0) {
+                    console.log('Inventory columns:', Object.keys(inventoryData[0]));
+                }
+                if (consumptionData.length > 0) {
+                    console.log('Consumption columns:', Object.keys(consumptionData[0]));
+                }
+                if (inwardedData.length > 0) {
+                    console.log('Inwarded columns:', Object.keys(inwardedData[0]));
+                }
 
                 // Update last updated timestamp
                 document.getElementById('last-updated').textContent = new Date().toLocaleString();
@@ -759,27 +783,33 @@
             // Get latest consumption per product
             const latestConsumption = {};
             consumptionData.forEach(row => {
-                const product = row.product_barcode;
-                const monthYear = `${row.balance_year}-${String(row.balance_month).padStart(2, '0')}`;
+                const product = row.product_barcode || row['Product Barcode'] || row['PRODUCT_BARCODE'];
+                const year = row.balance_year || row['Balance Year'] || row['year'];
+                const month = row.balance_month || row['Balance Month'] || row['month'];
+                const monthYear = `${year}-${String(month).padStart(2, '0')}`;
+                const consumption = row.total_consumption || row['Total Consumption'] || row['consumption'] || 0;
+
                 if (!latestConsumption[product] || monthYear > latestConsumption[product].monthYear) {
                     latestConsumption[product] = {
                         monthYear: monthYear,
-                        consumption: row.total_consumption || 0
+                        consumption: consumption
                     };
                 }
             });
 
             // Match with inventory
             docData = inventoryData.map(inv => {
-                const product = inv.PRODUCT_NAME;
-                const totalStock = (inv['Sum of Unrestricted Inventory'] || 0) + (inv['Sum of Restricted Inventory'] || 0);
+                const product = getInventoryValue(inv, 'product');
+                const unrestricted = getInventoryValue(inv, 'unrestricted') || 0;
+                const restricted = getInventoryValue(inv, 'restricted') || 0;
+                const totalStock = unrestricted + restricted;
                 const consumption = latestConsumption[product]?.consumption || 0;
                 const drr = consumption / 30; // Daily run rate
                 const doc = drr > 0 ? totalStock / drr : null;
 
                 return {
                     product: product,
-                    category: inv['Row Labels'],
+                    category: getInventoryValue(inv, 'category'),
                     stock: totalStock,
                     monthlyConsumption: consumption,
                     drr: drr,
@@ -804,13 +834,13 @@
 
         // Render Inventory Tab
         function renderInventoryTab() {
-            // Calculate totals
-            const totalUnrestricted = inventoryData.reduce((sum, row) => sum + (row['Sum of Unrestricted Inventory'] || 0), 0);
-            const totalRestricted = inventoryData.reduce((sum, row) => sum + (row['Sum of Restricted Inventory'] || 0), 0);
-            const categories = [...new Set(inventoryData.map(row => row['Row Labels']))];
+            // Calculate totals using helper function
+            const totalUnrestricted = inventoryData.reduce((sum, row) => sum + (getInventoryValue(row, 'unrestricted') || 0), 0);
+            const totalRestricted = inventoryData.reduce((sum, row) => sum + (getInventoryValue(row, 'restricted') || 0), 0);
+            const categories = [...new Set(inventoryData.map(row => getInventoryValue(row, 'category')))];
             const zeroStock = inventoryData.filter(row =>
-                (row['Sum of Unrestricted Inventory'] || 0) === 0 &&
-                (row['Sum of Restricted Inventory'] || 0) === 0
+                (getInventoryValue(row, 'unrestricted') || 0) === 0 &&
+                (getInventoryValue(row, 'restricted') || 0) === 0
             ).length;
 
             document.getElementById('total-unrestricted').textContent = formatNumber(totalUnrestricted);
@@ -821,8 +851,8 @@
             // Category chart
             const categoryData = {};
             inventoryData.forEach(row => {
-                const cat = row['Row Labels'] || 'Unknown';
-                categoryData[cat] = (categoryData[cat] || 0) + (row['Sum of Unrestricted Inventory'] || 0);
+                const cat = getInventoryValue(row, 'category') || 'Unknown';
+                categoryData[cat] = (categoryData[cat] || 0) + (getInventoryValue(row, 'unrestricted') || 0);
             });
 
             const sortedCategories = Object.entries(categoryData)
@@ -852,17 +882,17 @@
 
             // Top products chart
             const topProducts = [...inventoryData]
-                .sort((a, b) => (b['Sum of Unrestricted Inventory'] || 0) - (a['Sum of Unrestricted Inventory'] || 0))
+                .sort((a, b) => (getInventoryValue(b, 'unrestricted') || 0) - (getInventoryValue(a, 'unrestricted') || 0))
                 .slice(0, 10);
 
             if (charts.topProducts) charts.topProducts.destroy();
             charts.topProducts = new Chart(document.getElementById('topProductsChart'), {
                 type: 'bar',
                 data: {
-                    labels: topProducts.map(p => p.PRODUCT_NAME),
+                    labels: topProducts.map(p => getInventoryValue(p, 'product')),
                     datasets: [{
                         label: 'Unrestricted Stock',
-                        data: topProducts.map(p => p['Sum of Unrestricted Inventory'] || 0),
+                        data: topProducts.map(p => getInventoryValue(p, 'unrestricted') || 0),
                         backgroundColor: '#667eea'
                     }]
                 },
@@ -880,8 +910,8 @@
             document.getElementById('inventory-search').addEventListener('input', (e) => {
                 const search = e.target.value.toLowerCase();
                 const filtered = inventoryData.filter(row =>
-                    (row.PRODUCT_NAME || '').toLowerCase().includes(search) ||
-                    (row['Row Labels'] || '').toLowerCase().includes(search)
+                    (getInventoryValue(row, 'product') || '').toLowerCase().includes(search) ||
+                    (getInventoryValue(row, 'category') || '').toLowerCase().includes(search)
                 );
                 renderInventoryTable(filtered);
             });
@@ -889,22 +919,36 @@
 
         function renderInventoryTable(data) {
             const tbody = document.getElementById('inventory-tbody');
-            tbody.innerHTML = data.slice(0, 500).map(row => `
+            tbody.innerHTML = data.slice(0, 500).map(row => {
+                const restricted = getInventoryValue(row, 'restricted') || 0;
+                const unrestricted = getInventoryValue(row, 'unrestricted') || 0;
+                return `
                 <tr>
-                    <td>${row['Row Labels'] || ''}</td>
-                    <td>${row.PRODUCT_NAME || ''}</td>
-                    <td class="align-right number-format">${formatNumber(row['Sum of Restricted Inventory'] || 0)}</td>
-                    <td class="align-right number-format">${formatNumber(row['Sum of Unrestricted Inventory'] || 0)}</td>
-                    <td class="align-right number-format">${formatNumber((row['Sum of Restricted Inventory'] || 0) + (row['Sum of Unrestricted Inventory'] || 0))}</td>
+                    <td>${getInventoryValue(row, 'category') || ''}</td>
+                    <td>${getInventoryValue(row, 'product') || ''}</td>
+                    <td class="align-right number-format">${formatNumber(restricted)}</td>
+                    <td class="align-right number-format">${formatNumber(unrestricted)}</td>
+                    <td class="align-right number-format">${formatNumber(restricted + unrestricted)}</td>
                 </tr>
-            `).join('');
+            `}).join('');
+        }
+
+        // Helper function to get consumption row values (supports multiple column name formats)
+        function getConsumptionValue(row, field) {
+            const mappings = {
+                product: row['product_barcode'] || row['Product Barcode'] || row['PRODUCT_BARCODE'] || row['product_name'] || '',
+                year: row['balance_year'] || row['Balance Year'] || row['year'] || row['Year'] || 0,
+                month: row['balance_month'] || row['Balance Month'] || row['month'] || row['Month'] || 0,
+                consumption: row['total_consumption'] || row['Total Consumption'] || row['consumption'] || row['Consumption'] || 0
+            };
+            return mappings[field];
         }
 
         // Render Consumption Tab
         function renderConsumptionTab() {
             // Get unique years and months
-            const years = [...new Set(consumptionData.map(r => r.balance_year))].sort((a, b) => b - a);
-            const months = [...new Set(consumptionData.map(r => r.balance_month))].sort((a, b) => a - b);
+            const years = [...new Set(consumptionData.map(r => getConsumptionValue(r, 'year')))].filter(y => y).sort((a, b) => b - a);
+            const months = [...new Set(consumptionData.map(r => getConsumptionValue(r, 'month')))].filter(m => m).sort((a, b) => a - b);
 
             const yearSelect = document.getElementById('consumption-year-filter');
             years.forEach(y => {
@@ -925,12 +969,12 @@
 
             // Latest month stats
             const latestYear = Math.max(...years);
-            const latestMonth = Math.max(...consumptionData.filter(r => r.balance_year === latestYear).map(r => r.balance_month));
-            const latestData = consumptionData.filter(r => r.balance_year === latestYear && r.balance_month === latestMonth);
+            const latestMonth = Math.max(...consumptionData.filter(r => getConsumptionValue(r, 'year') === latestYear).map(r => getConsumptionValue(r, 'month')));
+            const latestData = consumptionData.filter(r => getConsumptionValue(r, 'year') === latestYear && getConsumptionValue(r, 'month') === latestMonth);
 
-            const totalConsumption = latestData.reduce((sum, r) => sum + (r.total_consumption || 0), 0);
+            const totalConsumption = latestData.reduce((sum, r) => sum + (getConsumptionValue(r, 'consumption') || 0), 0);
             const avgDRR = totalConsumption / 30;
-            const activeProducts = latestData.filter(r => r.total_consumption > 0).length;
+            const activeProducts = latestData.filter(r => getConsumptionValue(r, 'consumption') > 0).length;
 
             document.getElementById('total-consumption').textContent = formatNumber(totalConsumption);
             document.getElementById('avg-drr').textContent = formatNumber(avgDRR);
@@ -940,8 +984,10 @@
             // Monthly trend chart
             const monthlyTotals = {};
             consumptionData.forEach(row => {
-                const key = `${row.balance_year}-${String(row.balance_month).padStart(2, '0')}`;
-                monthlyTotals[key] = (monthlyTotals[key] || 0) + (row.total_consumption || 0);
+                const year = getConsumptionValue(row, 'year');
+                const month = getConsumptionValue(row, 'month');
+                const key = `${year}-${String(month).padStart(2, '0')}`;
+                monthlyTotals[key] = (monthlyTotals[key] || 0) + (getConsumptionValue(row, 'consumption') || 0);
             });
 
             const sortedMonths = Object.keys(monthlyTotals).sort();
@@ -979,9 +1025,9 @@
                 const search = document.getElementById('consumption-search').value.toLowerCase();
 
                 let filtered = consumptionData;
-                if (year) filtered = filtered.filter(r => r.balance_year == year);
-                if (month) filtered = filtered.filter(r => r.balance_month == month);
-                if (search) filtered = filtered.filter(r => (r.product_barcode || '').toLowerCase().includes(search));
+                if (year) filtered = filtered.filter(r => getConsumptionValue(r, 'year') == year);
+                if (month) filtered = filtered.filter(r => getConsumptionValue(r, 'month') == month);
+                if (search) filtered = filtered.filter(r => (getConsumptionValue(r, 'product') || '').toLowerCase().includes(search));
 
                 renderConsumptionTable(filtered);
             };
@@ -994,12 +1040,13 @@
         function renderConsumptionTable(data) {
             const tbody = document.getElementById('consumption-tbody');
             tbody.innerHTML = data.slice(0, 500).map(row => {
-                const drr = (row.total_consumption || 0) / 30;
+                const consumption = getConsumptionValue(row, 'consumption') || 0;
+                const drr = consumption / 30;
                 return `
                     <tr>
-                        <td>${row.balance_month}/${row.balance_year}</td>
-                        <td>${row.product_barcode || ''}</td>
-                        <td class="align-right number-format">${formatNumber(row.total_consumption || 0)}</td>
+                        <td>${getConsumptionValue(row, 'month')}/${getConsumptionValue(row, 'year')}</td>
+                        <td>${getConsumptionValue(row, 'product') || ''}</td>
+                        <td class="align-right number-format">${formatNumber(consumption)}</td>
                         <td class="align-right number-format">${formatNumber(drr)}</td>
                     </tr>
                 `;
@@ -1085,20 +1132,37 @@
             }).join('');
         }
 
+        // Helper function to get inwarded row values (supports both old and new column names)
+        function getInwardedValue(row, field) {
+            const mappings = {
+                date: row['date: Day'] || row['date'] || row['Date'] || '',
+                product: row['product_name'] || row['Product Name'] || row['PRODUCT_NAME'] || '',
+                vendor: row['vendor_name'] || row['Vendor Name'] || row['VENDOR_NAME'] || '',
+                lot: row['lot_name'] || row['Lot Name'] || row['LOT_NAME'] || '',
+                inward_qty: row['Sum of inward_qty'] || row['inward_qty'] || row['Inward Qty'] || 0,
+                net_qty: row['Sum of net_qty'] || row['net_qty'] || row['Net Qty'] || 0,
+                unit_price: row['Average of unit_price_inr'] || row['avg_unit_price'] || row['unit_price_inr'] || row['Unit Price'] || 0,
+                total_value: row['total_value'] || row['Total Value'] || 0
+            };
+            return mappings[field];
+        }
+
         // Render Inwarded Tab
         function renderInwardedTab() {
-            const totalInwarded = inwardedData.reduce((sum, r) => sum + (r['Sum of inward_qty'] || 0), 0);
+            const totalInwarded = inwardedData.reduce((sum, r) => sum + (getInwardedValue(r, 'inward_qty') || 0), 0);
             const totalValue = inwardedData.reduce((sum, r) => {
-                return sum + ((r['Sum of net_qty'] || 0) * (r['Average of unit_price_inr'] || 0));
+                const value = getInwardedValue(r, 'total_value');
+                if (value) return sum + value;
+                return sum + ((getInwardedValue(r, 'net_qty') || 0) * (getInwardedValue(r, 'unit_price') || 0));
             }, 0);
-            const vendors = [...new Set(inwardedData.map(r => r.vendor_name))];
+            const vendors = [...new Set(inwardedData.map(r => getInwardedValue(r, 'vendor')))];
 
             // Recent receipts (last 7 days)
-            const dates = inwardedData.map(r => r['date: Day']).filter(d => d);
+            const dates = inwardedData.map(r => getInwardedValue(r, 'date')).filter(d => d);
             const maxDate = dates.length > 0 ? new Date(Math.max(...dates.map(d => new Date(d)))) : new Date();
             const weekAgo = new Date(maxDate);
             weekAgo.setDate(weekAgo.getDate() - 7);
-            const recentReceipts = inwardedData.filter(r => new Date(r['date: Day']) >= weekAgo).length;
+            const recentReceipts = inwardedData.filter(r => new Date(getInwardedValue(r, 'date')) >= weekAgo).length;
 
             document.getElementById('total-inwarded').textContent = formatNumber(totalInwarded);
             document.getElementById('total-value').textContent = formatNumber(totalValue);
@@ -1119,9 +1183,9 @@
             // Daily trend chart
             const dailyTotals = {};
             inwardedData.forEach(row => {
-                const date = row['date: Day'];
+                const date = getInwardedValue(row, 'date');
                 if (date) {
-                    dailyTotals[date] = (dailyTotals[date] || 0) + (row['Sum of net_qty'] || 0);
+                    dailyTotals[date] = (dailyTotals[date] || 0) + (getInwardedValue(row, 'net_qty') || 0);
                 }
             });
 
@@ -1157,12 +1221,12 @@
                 const search = document.getElementById('inwarded-search').value.toLowerCase();
 
                 let filtered = inwardedData;
-                if (dateFrom) filtered = filtered.filter(r => r['date: Day'] >= dateFrom);
-                if (dateTo) filtered = filtered.filter(r => r['date: Day'] <= dateTo);
-                if (vendor) filtered = filtered.filter(r => r.vendor_name === vendor);
+                if (dateFrom) filtered = filtered.filter(r => getInwardedValue(r, 'date') >= dateFrom);
+                if (dateTo) filtered = filtered.filter(r => getInwardedValue(r, 'date') <= dateTo);
+                if (vendor) filtered = filtered.filter(r => getInwardedValue(r, 'vendor') === vendor);
                 if (search) filtered = filtered.filter(r =>
-                    (r.product_name || '').toLowerCase().includes(search) ||
-                    (r.vendor_name || '').toLowerCase().includes(search)
+                    (getInwardedValue(r, 'product') || '').toLowerCase().includes(search) ||
+                    (getInwardedValue(r, 'vendor') || '').toLowerCase().includes(search)
                 );
 
                 renderInwardedTable(filtered);
@@ -1176,17 +1240,19 @@
 
         function renderInwardedTable(data) {
             const tbody = document.getElementById('inwarded-tbody');
-            tbody.innerHTML = data.slice(0, 500).map(row => `
+            tbody.innerHTML = data.slice(0, 500).map(row => {
+                const vendor = getInwardedValue(row, 'vendor') || '';
+                return `
                 <tr>
-                    <td>${row['date: Day'] || ''}</td>
-                    <td>${row.product_name || ''}</td>
-                    <td>${(row.vendor_name || '').substring(0, 30)}${(row.vendor_name || '').length > 30 ? '...' : ''}</td>
-                    <td>${row.lot_name || ''}</td>
-                    <td class="align-right number-format">${formatNumber(row['Sum of inward_qty'] || 0)}</td>
-                    <td class="align-right number-format">${formatNumber(row['Sum of net_qty'] || 0)}</td>
-                    <td class="align-right number-format">${formatNumber(row['Average of unit_price_inr'] || 0)}</td>
+                    <td>${getInwardedValue(row, 'date') || ''}</td>
+                    <td>${getInwardedValue(row, 'product') || ''}</td>
+                    <td>${vendor.substring(0, 30)}${vendor.length > 30 ? '...' : ''}</td>
+                    <td>${getInwardedValue(row, 'lot') || ''}</td>
+                    <td class="align-right number-format">${formatNumber(getInwardedValue(row, 'inward_qty') || 0)}</td>
+                    <td class="align-right number-format">${formatNumber(getInwardedValue(row, 'net_qty') || 0)}</td>
+                    <td class="align-right number-format">${formatNumber(getInwardedValue(row, 'unit_price') || 0)}</td>
                 </tr>
-            `).join('');
+            `}).join('');
         }
 
         // Initialize on load
