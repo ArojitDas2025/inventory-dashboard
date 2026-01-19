@@ -615,12 +615,12 @@
                         <thead>
                             <tr>
                                 <th>Date</th>
-                                <th>Product</th>
-                                <th>Vendor</th>
-                                <th>Lot</th>
-                                <th class="align-right">Inward Qty</th>
-                                <th class="align-right">Net Qty</th>
-                                <th class="align-right">Unit Price</th>
+                                <th>Part No</th>
+                                <th>Name/Vendor</th>
+                                <th>Location</th>
+                                <th class="align-right">Qty</th>
+                                <th>PO Number</th>
+                                <th class="align-right">Price</th>
                             </tr>
                         </thead>
                         <tbody id="inwarded-tbody">
@@ -708,15 +708,25 @@
             });
         }
 
+        // Helper to parse numbers that may have commas as thousand separators
+        function parseNum(val) {
+            if (val === null || val === undefined || val === '') return 0;
+            if (typeof val === 'number') return val;
+            // Remove commas and parse
+            const cleaned = String(val).replace(/,/g, '');
+            const num = parseFloat(cleaned);
+            return isNaN(num) ? 0 : num;
+        }
+
         // Helper function to get inventory row values (supports both old and new column names)
         function getInventoryValue(row, field) {
             const mappings = {
                 category: row['Row Labels'] || row['Category'] || row['CATEGORY'] || '',
                 product: row['PRODUCT_NAME'] || row['Product Name'] || row['product_name'] || '',
-                unrestricted: row['Unrestricted Inventory'] || row['Sum of Unrestricted Inventory'] || row['unrestricted_inventory'] || 0,
-                restricted: row['Restricted Inventory'] || row['Sum of Restricted Inventory'] || row['restricted_inventory'] || 0,
-                wip: row['WIP Inventory'] || row['wip_inventory'] || 0,
-                total: row['Grand Total'] || row['Total'] || 0
+                unrestricted: parseNum(row['Unrestricted Inventory'] || row['Sum of Unrestricted Inventory'] || row['unrestricted_inventory']),
+                restricted: parseNum(row['Restricted Inventory'] || row['Sum of Restricted Inventory'] || row['restricted_inventory'] || row['PV - Restricted Inventory']),
+                wip: parseNum(row['WIP Inventory'] || row['wip_inventory']),
+                total: parseNum(row['Grand Total'] || row['Total'])
             };
             return mappings[field];
         }
@@ -936,10 +946,10 @@
         // Helper function to get consumption row values (supports multiple column name formats)
         function getConsumptionValue(row, field) {
             const mappings = {
-                product: row['product_barcode'] || row['Product Barcode'] || row['PRODUCT_BARCODE'] || row['product_name'] || '',
-                year: row['balance_year'] || row['Balance Year'] || row['year'] || row['Year'] || 0,
-                month: row['balance_month'] || row['Balance Month'] || row['month'] || row['Month'] || 0,
-                consumption: row['total_consumption'] || row['Total Consumption'] || row['consumption'] || row['Consumption'] || 0
+                product: (row['product_barcode'] || row['Product Barcode'] || row['PRODUCT_BARCODE'] || row['product_name'] || '').toString().trim(),
+                year: parseNum(row['balance_year'] || row['Balance Year'] || row['year'] || row['Year']),
+                month: parseNum(row['balance_month'] || row['Balance Month'] || row['month'] || row['Month']),
+                consumption: parseNum(row['total_consumption'] || row['Total Consumption'] || row['consumption'] || row['Consumption'])
             };
             return mappings[field];
         }
@@ -1135,14 +1145,15 @@
         // Helper function to get inwarded row values (supports both old and new column names)
         function getInwardedValue(row, field) {
             const mappings = {
-                date: row['date: Day'] || row['date'] || row['Date'] || '',
-                product: row['product_name'] || row['Product Name'] || row['PRODUCT_NAME'] || '',
-                vendor: row['vendor_name'] || row['Vendor Name'] || row['VENDOR_NAME'] || '',
-                lot: row['lot_name'] || row['Lot Name'] || row['LOT_NAME'] || '',
-                inward_qty: row['Sum of inward_qty'] || row['inward_qty'] || row['Inward Qty'] || 0,
-                net_qty: row['Sum of net_qty'] || row['net_qty'] || row['Net Qty'] || 0,
-                unit_price: row['Average of unit_price_inr'] || row['avg_unit_price'] || row['unit_price_inr'] || row['Unit Price'] || 0,
-                total_value: row['total_value'] || row['Total Value'] || 0
+                date: row['Date'] || row['date: Day'] || row['date'] || '',
+                product: row['Part No'] || row['product_name'] || row['Product Name'] || row['PRODUCT_NAME'] || '',
+                vendor: row['name'] || row['vendor_name'] || row['Vendor Name'] || row['VENDOR_NAME'] || '',
+                lot: row['Location Moved'] || row['lot_name'] || row['Lot Name'] || row['LOT_NAME'] || '',
+                inward_qty: parseNum(row['Qty'] || row['Sum of inward_qty'] || row['inward_qty'] || row['Inward Qty']),
+                net_qty: parseNum(row['Qty'] || row['Sum of net_qty'] || row['net_qty'] || row['Net Qty']),
+                unit_price: parseNum(row['price'] || row['Average of unit_price_inr'] || row['avg_unit_price'] || row['unit_price_inr'] || row['Unit Price']),
+                total_value: parseNum(row['total_value'] || row['Total Value']),
+                po_number: row['po_number'] || row['PO Number'] || ''
             };
             return mappings[field];
         }
@@ -1153,16 +1164,27 @@
             const totalValue = inwardedData.reduce((sum, r) => {
                 const value = getInwardedValue(r, 'total_value');
                 if (value) return sum + value;
-                return sum + ((getInwardedValue(r, 'net_qty') || 0) * (getInwardedValue(r, 'unit_price') || 0));
+                const qty = getInwardedValue(r, 'inward_qty') || 0;
+                const price = getInwardedValue(r, 'unit_price') || 0;
+                return sum + (qty * price);
             }, 0);
-            const vendors = [...new Set(inwardedData.map(r => getInwardedValue(r, 'vendor')))];
+            const vendors = [...new Set(inwardedData.map(r => getInwardedValue(r, 'vendor')))].filter(v => v);
 
             // Recent receipts (last 7 days)
             const dates = inwardedData.map(r => getInwardedValue(r, 'date')).filter(d => d);
-            const maxDate = dates.length > 0 ? new Date(Math.max(...dates.map(d => new Date(d)))) : new Date();
-            const weekAgo = new Date(maxDate);
-            weekAgo.setDate(weekAgo.getDate() - 7);
-            const recentReceipts = inwardedData.filter(r => new Date(getInwardedValue(r, 'date')) >= weekAgo).length;
+            let recentReceipts = 0;
+            if (dates.length > 0) {
+                const parsedDates = dates.map(d => new Date(d)).filter(d => !isNaN(d.getTime()));
+                if (parsedDates.length > 0) {
+                    const maxDate = new Date(Math.max(...parsedDates));
+                    const weekAgo = new Date(maxDate);
+                    weekAgo.setDate(weekAgo.getDate() - 7);
+                    recentReceipts = inwardedData.filter(r => {
+                        const d = new Date(getInwardedValue(r, 'date'));
+                        return !isNaN(d.getTime()) && d >= weekAgo;
+                    }).length;
+                }
+            }
 
             document.getElementById('total-inwarded').textContent = formatNumber(totalInwarded);
             document.getElementById('total-value').textContent = formatNumber(totalValue);
@@ -1249,7 +1271,7 @@
                     <td>${vendor.substring(0, 30)}${vendor.length > 30 ? '...' : ''}</td>
                     <td>${getInwardedValue(row, 'lot') || ''}</td>
                     <td class="align-right number-format">${formatNumber(getInwardedValue(row, 'inward_qty') || 0)}</td>
-                    <td class="align-right number-format">${formatNumber(getInwardedValue(row, 'net_qty') || 0)}</td>
+                    <td>${getInwardedValue(row, 'po_number') || ''}</td>
                     <td class="align-right number-format">${formatNumber(getInwardedValue(row, 'unit_price') || 0)}</td>
                 </tr>
             `}).join('');
