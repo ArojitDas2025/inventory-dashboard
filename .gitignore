@@ -1,0 +1,13 @@
+# Large data files (loaded from Google Sheets instead)
+rm_inwarded_data.csv
+rm_inwarded.xlsx
+inventory_qty.xlsx
+consumption_mom.xlsx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/

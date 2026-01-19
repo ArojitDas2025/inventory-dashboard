@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 600;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 30px;
+        }
+
+        .header-stat {
+            text-align: center;
+        }
+
+        .header-stat-value {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: white;
+            padding: 0 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .nav-tab {
+            padding: 15px 25px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            font-weight: 500;
+            color: #666;
+            transition: all 0.3s;
+        }
+
+        .nav-tab:hover {
+            color: #667eea;
+        }
+
+        .nav-tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .card-title {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .card-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #1a1a2e;
+        }
+
+        .card-subtitle {
+            font-size: 12px;
+            color: #999;
+            margin-top: 5px;
+        }
+
+        .card.warning .card-value {
+            color: #f59e0b;
+        }
+
+        .card.danger .card-value {
+            color: #ef4444;
+        }
+
+        .card.success .card-value {
+            color: #10b981;
+        }
+
+        .table-container {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .table-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .search-box {
+            padding: 8px 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            width: 250px;
+            font-size: 14px;
+        }
+
+        .search-box:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #666;
+            font-size: 13px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        th:hover {
+            background: #f0f0f0;
+        }
+
+        tr:hover {
+            background: #f8f9fa;
+        }
+
+        .table-wrapper {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-critical {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .status-low {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .status-ok {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .filters {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .filter-group select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .loading-spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .number-format {
+            font-variant-numeric: tabular-nums;
+        }
+
+        .align-right {
+            text-align: right;
+        }
+
+        .header-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .last-updated {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .refresh-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .data-source-badge {
+            font-size: 11px;
+            padding: 3px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .source-live {
+            background: #10b981;
+            color: white;
+        }
+
+        .source-local {
+            background: #f59e0b;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Inventory Dashboard</h1>
+        <div class="header-info">
+            <div class="last-updated">Last Updated: <span id="last-updated">--</span></div>
+            <button class="refresh-btn" onclick="location.reload()">Refresh Data</button>
+        </div>
+        <div class="header-stats">
+            <div class="header-stat">
+                <div class="header-stat-value" id="total-skus">--</div>
+                <div class="header-stat-label">Total SKUs</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-value" id="low-stock-count">--</div>
+                <div class="header-stat-label">Low Stock Items</div>
+            </div>
+            <div class="header-stat">
+                <div class="header-stat-value" id="avg-doc">--</div>
+                <div class="header-stat-label">Avg DoC (Days)</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nav-tabs">
+        <div class="nav-tab active" data-tab="inventory">Current Inventory</div>
+        <div class="nav-tab" data-tab="consumption">Consumption & DRR</div>
+        <div class="nav-tab" data-tab="doc">Days of Cover</div>
+        <div class="nav-tab" data-tab="inwarded">RM Inwarded</div>
+    </div>
+
+    <div class="container">
+        <!-- Inventory Tab -->
+        <div class="tab-content active" id="inventory-tab">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-title">Total Unrestricted Inventory</div>
+                    <div class="card-value" id="total-unrestricted">--</div>
+                    <div class="card-subtitle">Units available</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Restricted Inventory</div>
+                    <div class="card-value" id="total-restricted">--</div>
+                    <div class="card-subtitle">Units on hold</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Product Categories</div>
+                    <div class="card-value" id="total-categories">--</div>
+                    <div class="card-subtitle">Unique categories</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Zero Stock Items</div>
+                    <div class="card-value" id="zero-stock">--</div>
+                    <div class="card-subtitle">Need attention</div>
+                </div>
+            </div>
+
+            <div class="charts-row">
+                <div class="chart-container">
+                    <div class="chart-title">Inventory by Category</div>
+                    <canvas id="inventoryCategoryChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <div class="chart-title">Top 10 Products by Stock</div>
+                    <canvas id="topProductsChart"></canvas>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Inventory Details</div>
+                    <input type="text" class="search-box" id="inventory-search" placeholder="Search products...">
+                </div>
+                <div class="table-wrapper">
+                    <table id="inventory-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Product Name</th>
+                                <th class="align-right">Restricted</th>
+                                <th class="align-right">Unrestricted</th>
+                                <th class="align-right">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-tbody">
+                            <tr><td colspan="5" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Consumption Tab -->
+        <div class="tab-content" id="consumption-tab">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-title">Total Monthly Consumption</div>
+                    <div class="card-value" id="total-consumption">--</div>
+                    <div class="card-subtitle">Latest month</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Average Daily Run Rate</div>
+                    <div class="card-value" id="avg-drr">--</div>
+                    <div class="card-subtitle">Units per day</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Active Products</div>
+                    <div class="card-value" id="active-products">--</div>
+                    <div class="card-subtitle">With consumption</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Months of Data</div>
+                    <div class="card-value" id="months-data">--</div>
+                    <div class="card-subtitle">Available history</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Year:</label>
+                    <select id="consumption-year-filter">
+                        <option value="">All Years</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Month:</label>
+                    <select id="consumption-month-filter">
+                        <option value="">All Months</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Monthly Consumption Trend</div>
+                <canvas id="consumptionTrendChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Consumption Details with DRR</div>
+                    <input type="text" class="search-box" id="consumption-search" placeholder="Search products...">
+                </div>
+                <div class="table-wrapper">
+                    <table id="consumption-table">
+                        <thead>
+                            <tr>
+                                <th>Month/Year</th>
+                                <th>Product</th>
+                                <th class="align-right">Monthly Consumption</th>
+                                <th class="align-right">DRR (Daily Rate)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="consumption-tbody">
+                            <tr><td colspan="4" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Days of Cover Tab -->
+        <div class="tab-content" id="doc-tab">
+            <div class="cards-grid">
+                <div class="card danger">
+                    <div class="card-title">Critical Stock (&lt;7 days)</div>
+                    <div class="card-value" id="critical-stock">--</div>
+                    <div class="card-subtitle">Immediate action needed</div>
+                </div>
+                <div class="card warning">
+                    <div class="card-title">Low Stock (7-30 days)</div>
+                    <div class="card-value" id="low-stock">--</div>
+                    <div class="card-subtitle">Plan replenishment</div>
+                </div>
+                <div class="card success">
+                    <div class="card-title">Healthy Stock (&gt;30 days)</div>
+                    <div class="card-value" id="healthy-stock">--</div>
+                    <div class="card-subtitle">Good coverage</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">No Consumption Data</div>
+                    <div class="card-value" id="no-consumption">--</div>
+                    <div class="card-subtitle">Cannot calculate DoC</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Stock Coverage Distribution</div>
+                <canvas id="docDistributionChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">Days of Cover Analysis</div>
+                    <input type="text" class="search-box" id="doc-search" placeholder="Search products...">
+                </div>
+                <div class="table-wrapper">
+                    <table id="doc-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th class="align-right">Current Stock</th>
+                                <th class="align-right">Monthly Consumption</th>
+                                <th class="align-right">DRR</th>
+                                <th class="align-right">Days of Cover</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="doc-tbody">
+                            <tr><td colspan="6" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- RM Inwarded Tab -->
+        <div class="tab-content" id="inwarded-tab">
+            <div class="cards-grid">
+                <div class="card">
+                    <div class="card-title">Total Inwarded Qty</div>
+                    <div class="card-value" id="total-inwarded">--</div>
+                    <div class="card-subtitle">All time</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Total Value (INR)</div>
+                    <div class="card-value" id="total-value">--</div>
+                    <div class="card-subtitle">Estimated</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Unique Vendors</div>
+                    <div class="card-value" id="unique-vendors">--</div>
+                    <div class="card-subtitle">Suppliers</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">Recent Receipts</div>
+                    <div class="card-value" id="recent-receipts">--</div>
+                    <div class="card-subtitle">Last 7 days</div>
+                </div>
+            </div>
+
+            <div class="filters">
+                <div class="filter-group">
+                    <label>Date From:</label>
+                    <input type="date" id="inward-date-from">
+                </div>
+                <div class="filter-group">
+                    <label>Date To:</label>
+                    <input type="date" id="inward-date-to">
+                </div>
+                <div class="filter-group">
+                    <label>Vendor:</label>
+                    <select id="vendor-filter">
+                        <option value="">All Vendors</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">Daily Inward Trend</div>
+                <canvas id="inwardTrendChart"></canvas>
+            </div>
+
+            <div class="table-container">
+                <div class="table-header">
+                    <div class="table-title">RM Inward Details</div>
+                    <input type="text" class="search-box" id="inwarded-search" placeholder="Search...">
+                </div>
+                <div class="table-wrapper">
+                    <table id="inwarded-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Product</th>
+                                <th>Vendor</th>
+                                <th>Lot</th>
+                                <th class="align-right">Inward Qty</th>
+                                <th class="align-right">Net Qty</th>
+                                <th class="align-right">Unit Price</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inwarded-tbody">
+                            <tr><td colspan="7" class="loading"><div class="loading-spinner"></div>Loading data...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global data stores
+        let inventoryData = [];
+        let consumptionData = [];
+        let inwardedData = [];
+        let docData = [];
+
+        // Chart instances
+        let charts = {};
+
+        // Format numbers with commas
+        function formatNumber(num) {
+            if (num === null || num === undefined || isNaN(num)) return '--';
+            return num.toLocaleString('en-IN', { maximumFractionDigits: 2 });
+        }
+
+        // Tab switching
+        document.querySelectorAll('.nav-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.tab + '-tab').classList.add('active');
+            });
+        });
+
+        // Google Sheets IDs (from your shared links)
+        const SHEETS = {
+            inventory: '1KeJ-SNAmO5fWrFcIQ052Oc_M_uux4SJn',
+            consumption: '1oWegQWnVHwm7epB_WaZdiCpleFgUx5OP',
+            inwarded: '1TscCXc6FD7XWwTNbvNFedTuBrkAdw7Dm'
+        };
+
+        // Load from Google Sheets (published as CSV)
+        async function loadFromGoogleSheet(sheetId) {
+            const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+            return new Promise((resolve, reject) => {
+                console.log('Loading from Google Sheet:', sheetId);
+                Papa.parse(url, {
+                    download: true,
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        console.log('Loaded:', results.data.length, 'rows');
+                        resolve(results.data);
+                    },
+                    error: (error) => {
+                        console.error('Error loading sheet:', error);
+                        reject(error);
+                    }
+                });
+            });
+        }
+
+        // Load from local CSV files (fallback)
+        async function loadCSV(filename) {
+            return new Promise((resolve, reject) => {
+                console.log('Loading:', filename);
+                Papa.parse(filename, {
+                    download: true,
+                    header: true,
+                    dynamicTyping: true,
+                    skipEmptyLines: true,
+                    complete: (results) => {
+                        console.log('Loaded:', filename, results.data.length, 'rows');
+                        resolve(results.data);
+                    },
+                    error: (error) => {
+                        console.error('Error loading:', filename, error);
+                        reject(error);
+                    }
+                });
+            });
+        }
+
+        // Initialize dashboard
+        async function init() {
+            try {
+                console.log('Starting data load...');
+
+                // Try loading from Google Sheets first, fallback to local CSV
+                try {
+                    console.log('Attempting to load from Google Sheets...');
+                    [inventoryData, consumptionData, inwardedData] = await Promise.all([
+                        loadFromGoogleSheet(SHEETS.inventory),
+                        loadFromGoogleSheet(SHEETS.consumption),
+                        loadFromGoogleSheet(SHEETS.inwarded)
+                    ]);
+                    console.log('Loaded from Google Sheets successfully!');
+                } catch (sheetError) {
+                    console.log('Google Sheets failed, loading from local CSV files...', sheetError);
+                    [inventoryData, consumptionData, inwardedData] = await Promise.all([
+                        loadCSV('inventory_qty_data.csv'),
+                        loadCSV('consumption_mom_data.csv'),
+                        loadCSV('rm_inwarded_recent.csv')
+                    ]);
+                }
+
+                console.log('All data loaded!');
+
+                // Update last updated timestamp
+                document.getElementById('last-updated').textContent = new Date().toLocaleString();
+
+                // Calculate DoC data
+                calculateDoC();
+
+                // Render all tabs
+                renderInventoryTab();
+                renderConsumptionTab();
+                renderDocTab();
+                renderInwardedTab();
+
+                // Update header stats
+                updateHeaderStats();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                alert('Error loading data files. Make sure CSV files are in the same directory.');
+            }
+        }
+
+        // Calculate Days of Cover
+        function calculateDoC() {
+            // Get latest consumption per product
+            const latestConsumption = {};
+            consumptionData.forEach(row => {
+                const product = row.product_barcode;
+                const monthYear = `${row.balance_year}-${String(row.balance_month).padStart(2, '0')}`;
+                if (!latestConsumption[product] || monthYear > latestConsumption[product].monthYear) {
+                    latestConsumption[product] = {
+                        monthYear: monthYear,
+                        consumption: row.total_consumption || 0
+                    };
+                }
+            });
+
+            // Match with inventory
+            docData = inventoryData.map(inv => {
+                const product = inv.PRODUCT_NAME;
+                const totalStock = (inv['Sum of Unrestricted Inventory'] || 0) + (inv['Sum of Restricted Inventory'] || 0);
+                const consumption = latestConsumption[product]?.consumption || 0;
+                const drr = consumption / 30; // Daily run rate
+                const doc = drr > 0 ? totalStock / drr : null;
+
+                return {
+                    product: product,
+                    category: inv['Row Labels'],
+                    stock: totalStock,
+                    monthlyConsumption: consumption,
+                    drr: drr,
+                    doc: doc
+                };
+            });
+        }
+
+        // Update header statistics
+        function updateHeaderStats() {
+            document.getElementById('total-skus').textContent = formatNumber(inventoryData.length);
+
+            const lowStock = docData.filter(d => d.doc !== null && d.doc < 30 && d.doc > 0).length;
+            document.getElementById('low-stock-count').textContent = formatNumber(lowStock);
+
+            const validDocs = docData.filter(d => d.doc !== null && d.doc > 0);
+            const avgDoc = validDocs.length > 0
+                ? validDocs.reduce((sum, d) => sum + d.doc, 0) / validDocs.length
+                : 0;
+            document.getElementById('avg-doc').textContent = formatNumber(Math.round(avgDoc));
+        }
+
+        // Render Inventory Tab
+        function renderInventoryTab() {
+            // Calculate totals
+            const totalUnrestricted = inventoryData.reduce((sum, row) => sum + (row['Sum of Unrestricted Inventory'] || 0), 0);
+            const totalRestricted = inventoryData.reduce((sum, row) => sum + (row['Sum of Restricted Inventory'] || 0), 0);
+            const categories = [...new Set(inventoryData.map(row => row['Row Labels']))];
+            const zeroStock = inventoryData.filter(row =>
+                (row['Sum of Unrestricted Inventory'] || 0) === 0 &&
+                (row['Sum of Restricted Inventory'] || 0) === 0
+            ).length;
+
+            document.getElementById('total-unrestricted').textContent = formatNumber(totalUnrestricted);
+            document.getElementById('total-restricted').textContent = formatNumber(totalRestricted);
+            document.getElementById('total-categories').textContent = categories.length;
+            document.getElementById('zero-stock').textContent = zeroStock;
+
+            // Category chart
+            const categoryData = {};
+            inventoryData.forEach(row => {
+                const cat = row['Row Labels'] || 'Unknown';
+                categoryData[cat] = (categoryData[cat] || 0) + (row['Sum of Unrestricted Inventory'] || 0);
+            });
+
+            const sortedCategories = Object.entries(categoryData)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 10);
+
+            if (charts.inventoryCategory) charts.inventoryCategory.destroy();
+            charts.inventoryCategory = new Chart(document.getElementById('inventoryCategoryChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: sortedCategories.map(c => c[0]),
+                    datasets: [{
+                        data: sortedCategories.map(c => c[1]),
+                        backgroundColor: [
+                            '#667eea', '#764ba2', '#f59e0b', '#10b981', '#ef4444',
+                            '#8b5cf6', '#06b6d4', '#84cc16', '#f97316', '#ec4899'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+
+            // Top products chart
+            const topProducts = [...inventoryData]
+                .sort((a, b) => (b['Sum of Unrestricted Inventory'] || 0) - (a['Sum of Unrestricted Inventory'] || 0))
+                .slice(0, 10);
+
+            if (charts.topProducts) charts.topProducts.destroy();
+            charts.topProducts = new Chart(document.getElementById('topProductsChart'), {
+                type: 'bar',
+                data: {
+                    labels: topProducts.map(p => p.PRODUCT_NAME),
+                    datasets: [{
+                        label: 'Unrestricted Stock',
+                        data: topProducts.map(p => p['Sum of Unrestricted Inventory'] || 0),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    plugins: { legend: { display: false } }
+                }
+            });
+
+            // Render table
+            renderInventoryTable(inventoryData);
+
+            // Search functionality
+            document.getElementById('inventory-search').addEventListener('input', (e) => {
+                const search = e.target.value.toLowerCase();
+                const filtered = inventoryData.filter(row =>
+                    (row.PRODUCT_NAME || '').toLowerCase().includes(search) ||
+                    (row['Row Labels'] || '').toLowerCase().includes(search)
+                );
+                renderInventoryTable(filtered);
+            });
+        }
+
+        function renderInventoryTable(data) {
+            const tbody = document.getElementById('inventory-tbody');
+            tbody.innerHTML = data.slice(0, 500).map(row => `
+                <tr>
+                    <td>${row['Row Labels'] || ''}</td>
+                    <td>${row.PRODUCT_NAME || ''}</td>
+                    <td class="align-right number-format">${formatNumber(row['Sum of Restricted Inventory'] || 0)}</td>
+                    <td class="align-right number-format">${formatNumber(row['Sum of Unrestricted Inventory'] || 0)}</td>
+                    <td class="align-right number-format">${formatNumber((row['Sum of Restricted Inventory'] || 0) + (row['Sum of Unrestricted Inventory'] || 0))}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Render Consumption Tab
+        function renderConsumptionTab() {
+            // Get unique years and months
+            const years = [...new Set(consumptionData.map(r => r.balance_year))].sort((a, b) => b - a);
+            const months = [...new Set(consumptionData.map(r => r.balance_month))].sort((a, b) => a - b);
+
+            const yearSelect = document.getElementById('consumption-year-filter');
+            years.forEach(y => {
+                const opt = document.createElement('option');
+                opt.value = y;
+                opt.textContent = y;
+                yearSelect.appendChild(opt);
+            });
+
+            const monthSelect = document.getElementById('consumption-month-filter');
+            const monthNames = ['', 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            months.forEach(m => {
+                const opt = document.createElement('option');
+                opt.value = m;
+                opt.textContent = monthNames[m] || m;
+                monthSelect.appendChild(opt);
+            });
+
+            // Latest month stats
+            const latestYear = Math.max(...years);
+            const latestMonth = Math.max(...consumptionData.filter(r => r.balance_year === latestYear).map(r => r.balance_month));
+            const latestData = consumptionData.filter(r => r.balance_year === latestYear && r.balance_month === latestMonth);
+
+            const totalConsumption = latestData.reduce((sum, r) => sum + (r.total_consumption || 0), 0);
+            const avgDRR = totalConsumption / 30;
+            const activeProducts = latestData.filter(r => r.total_consumption > 0).length;
+
+            document.getElementById('total-consumption').textContent = formatNumber(totalConsumption);
+            document.getElementById('avg-drr').textContent = formatNumber(avgDRR);
+            document.getElementById('active-products').textContent = activeProducts;
+            document.getElementById('months-data').textContent = years.length * 12;
+
+            // Monthly trend chart
+            const monthlyTotals = {};
+            consumptionData.forEach(row => {
+                const key = `${row.balance_year}-${String(row.balance_month).padStart(2, '0')}`;
+                monthlyTotals[key] = (monthlyTotals[key] || 0) + (row.total_consumption || 0);
+            });
+
+            const sortedMonths = Object.keys(monthlyTotals).sort();
+
+            if (charts.consumptionTrend) charts.consumptionTrend.destroy();
+            charts.consumptionTrend = new Chart(document.getElementById('consumptionTrendChart'), {
+                type: 'line',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{
+                        label: 'Monthly Consumption',
+                        data: sortedMonths.map(m => monthlyTotals[m]),
+                        borderColor: '#667eea',
+                        backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            // Render table with DRR
+            renderConsumptionTable(consumptionData);
+
+            // Filters and search
+            const filterConsumption = () => {
+                const year = document.getElementById('consumption-year-filter').value;
+                const month = document.getElementById('consumption-month-filter').value;
+                const search = document.getElementById('consumption-search').value.toLowerCase();
+
+                let filtered = consumptionData;
+                if (year) filtered = filtered.filter(r => r.balance_year == year);
+                if (month) filtered = filtered.filter(r => r.balance_month == month);
+                if (search) filtered = filtered.filter(r => (r.product_barcode || '').toLowerCase().includes(search));
+
+                renderConsumptionTable(filtered);
+            };
+
+            document.getElementById('consumption-year-filter').addEventListener('change', filterConsumption);
+            document.getElementById('consumption-month-filter').addEventListener('change', filterConsumption);
+            document.getElementById('consumption-search').addEventListener('input', filterConsumption);
+        }
+
+        function renderConsumptionTable(data) {
+            const tbody = document.getElementById('consumption-tbody');
+            tbody.innerHTML = data.slice(0, 500).map(row => {
+                const drr = (row.total_consumption || 0) / 30;
+                return `
+                    <tr>
+                        <td>${row.balance_month}/${row.balance_year}</td>
+                        <td>${row.product_barcode || ''}</td>
+                        <td class="align-right number-format">${formatNumber(row.total_consumption || 0)}</td>
+                        <td class="align-right number-format">${formatNumber(drr)}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render DoC Tab
+        function renderDocTab() {
+            const critical = docData.filter(d => d.doc !== null && d.doc > 0 && d.doc < 7).length;
+            const low = docData.filter(d => d.doc !== null && d.doc >= 7 && d.doc < 30).length;
+            const healthy = docData.filter(d => d.doc !== null && d.doc >= 30).length;
+            const noData = docData.filter(d => d.doc === null || d.monthlyConsumption === 0).length;
+
+            document.getElementById('critical-stock').textContent = critical;
+            document.getElementById('low-stock').textContent = low;
+            document.getElementById('healthy-stock').textContent = healthy;
+            document.getElementById('no-consumption').textContent = noData;
+
+            // Distribution chart
+            if (charts.docDistribution) charts.docDistribution.destroy();
+            charts.docDistribution = new Chart(document.getElementById('docDistributionChart'), {
+                type: 'pie',
+                data: {
+                    labels: ['Critical (<7 days)', 'Low (7-30 days)', 'Healthy (>30 days)', 'No Data'],
+                    datasets: [{
+                        data: [critical, low, healthy, noData],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#9ca3af']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+
+            // Sort by DoC (critical first)
+            const sortedDoc = [...docData].sort((a, b) => {
+                if (a.doc === null) return 1;
+                if (b.doc === null) return -1;
+                return a.doc - b.doc;
+            });
+
+            renderDocTable(sortedDoc);
+
+            document.getElementById('doc-search').addEventListener('input', (e) => {
+                const search = e.target.value.toLowerCase();
+                const filtered = sortedDoc.filter(row =>
+                    (row.product || '').toLowerCase().includes(search)
+                );
+                renderDocTable(filtered);
+            });
+        }
+
+        function renderDocTable(data) {
+            const tbody = document.getElementById('doc-tbody');
+            tbody.innerHTML = data.slice(0, 500).map(row => {
+                let statusClass = 'status-ok';
+                let statusText = 'Healthy';
+
+                if (row.doc === null || row.monthlyConsumption === 0) {
+                    statusClass = '';
+                    statusText = 'No Data';
+                } else if (row.doc < 7) {
+                    statusClass = 'status-critical';
+                    statusText = 'Critical';
+                } else if (row.doc < 30) {
+                    statusClass = 'status-low';
+                    statusText = 'Low';
+                }
+
+                return `
+                    <tr>
+                        <td>${row.product || ''}</td>
+                        <td class="align-right number-format">${formatNumber(row.stock)}</td>
+                        <td class="align-right number-format">${formatNumber(row.monthlyConsumption)}</td>
+                        <td class="align-right number-format">${formatNumber(row.drr)}</td>
+                        <td class="align-right number-format">${row.doc !== null ? formatNumber(Math.round(row.doc)) : '--'}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Inwarded Tab
+        function renderInwardedTab() {
+            const totalInwarded = inwardedData.reduce((sum, r) => sum + (r['Sum of inward_qty'] || 0), 0);
+            const totalValue = inwardedData.reduce((sum, r) => {
+                return sum + ((r['Sum of net_qty'] || 0) * (r['Average of unit_price_inr'] || 0));
+            }, 0);
+            const vendors = [...new Set(inwardedData.map(r => r.vendor_name))];
+
+            // Recent receipts (last 7 days)
+            const dates = inwardedData.map(r => r['date: Day']).filter(d => d);
+            const maxDate = dates.length > 0 ? new Date(Math.max(...dates.map(d => new Date(d)))) : new Date();
+            const weekAgo = new Date(maxDate);
+            weekAgo.setDate(weekAgo.getDate() - 7);
+            const recentReceipts = inwardedData.filter(r => new Date(r['date: Day']) >= weekAgo).length;
+
+            document.getElementById('total-inwarded').textContent = formatNumber(totalInwarded);
+            document.getElementById('total-value').textContent = formatNumber(totalValue);
+            document.getElementById('unique-vendors').textContent = vendors.length;
+            document.getElementById('recent-receipts').textContent = recentReceipts;
+
+            // Populate vendor filter
+            const vendorSelect = document.getElementById('vendor-filter');
+            vendors.sort().forEach(v => {
+                if (v) {
+                    const opt = document.createElement('option');
+                    opt.value = v;
+                    opt.textContent = v.substring(0, 40) + (v.length > 40 ? '...' : '');
+                    vendorSelect.appendChild(opt);
+                }
+            });
+
+            // Daily trend chart
+            const dailyTotals = {};
+            inwardedData.forEach(row => {
+                const date = row['date: Day'];
+                if (date) {
+                    dailyTotals[date] = (dailyTotals[date] || 0) + (row['Sum of net_qty'] || 0);
+                }
+            });
+
+            const sortedDates = Object.keys(dailyTotals).sort().slice(-30);
+
+            if (charts.inwardTrend) charts.inwardTrend.destroy();
+            charts.inwardTrend = new Chart(document.getElementById('inwardTrendChart'), {
+                type: 'bar',
+                data: {
+                    labels: sortedDates,
+                    datasets: [{
+                        label: 'Daily Inward Qty',
+                        data: sortedDates.map(d => dailyTotals[d]),
+                        backgroundColor: '#667eea'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true }
+                    }
+                }
+            });
+
+            renderInwardedTable(inwardedData);
+
+            // Filters
+            const filterInwarded = () => {
+                const dateFrom = document.getElementById('inward-date-from').value;
+                const dateTo = document.getElementById('inward-date-to').value;
+                const vendor = document.getElementById('vendor-filter').value;
+                const search = document.getElementById('inwarded-search').value.toLowerCase();
+
+                let filtered = inwardedData;
+                if (dateFrom) filtered = filtered.filter(r => r['date: Day'] >= dateFrom);
+                if (dateTo) filtered = filtered.filter(r => r['date: Day'] <= dateTo);
+                if (vendor) filtered = filtered.filter(r => r.vendor_name === vendor);
+                if (search) filtered = filtered.filter(r =>
+                    (r.product_name || '').toLowerCase().includes(search) ||
+                    (r.vendor_name || '').toLowerCase().includes(search)
+                );
+
+                renderInwardedTable(filtered);
+            };
+
+            document.getElementById('inward-date-from').addEventListener('change', filterInwarded);
+            document.getElementById('inward-date-to').addEventListener('change', filterInwarded);
+            document.getElementById('vendor-filter').addEventListener('change', filterInwarded);
+            document.getElementById('inwarded-search').addEventListener('input', filterInwarded);
+        }
+
+        function renderInwardedTable(data) {
+            const tbody = document.getElementById('inwarded-tbody');
+            tbody.innerHTML = data.slice(0, 500).map(row => `
+                <tr>
+                    <td>${row['date: Day'] || ''}</td>
+                    <td>${row.product_name || ''}</td>
+                    <td>${(row.vendor_name || '').substring(0, 30)}${(row.vendor_name || '').length > 30 ? '...' : ''}</td>
+                    <td>${row.lot_name || ''}</td>
+                    <td class="align-right number-format">${formatNumber(row['Sum of inward_qty'] || 0)}</td>
+                    <td class="align-right number-format">${formatNumber(row['Sum of net_qty'] || 0)}</td>
+                    <td class="align-right number-format">${formatNumber(row['Average of unit_price_inr'] || 0)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Initialize on load
+        init();
+    </script>
+</body>
+</html>
