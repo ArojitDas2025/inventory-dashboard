@@ -1,0 +1,24 @@
+# Render Blueprint for automatic deployment
+# https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: metabase-proxy
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: METABASE_URL
+        sync: false
+      - key: METABASE_USERNAME
+        sync: false
+      - key: METABASE_PASSWORD
+        sync: false
+      - key: QUESTION_ID_INVENTORY
+        sync: false
+      - key: QUESTION_ID_CONSUMPTION
+        sync: false
+      - key: QUESTION_ID_INWARDED
+        sync: false

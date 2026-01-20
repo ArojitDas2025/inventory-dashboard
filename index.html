@@ -1138,12 +1138,22 @@
         // Chart instances
         let charts = {};
 
-        // Google Sheets IDs
+        // ===========================================
+        // DATA SOURCE CONFIGURATION
+        // ===========================================
+        // Option 1: Metabase Proxy (Recommended - set your Render URL here)
+        // After deploying to Render, update this URL
+        const METABASE_PROXY_URL = ''; // e.g., 'https://metabase-proxy-xxxx.onrender.com'
+
+        // Option 2: Google Sheets (Fallback)
         const SHEETS = {
             inventory: '1sloqBYcpvymJCszFtrk_QM_EmhB3uSmJ93bYfFBET0o',
             consumption: '1O3ERZ7iq-MRlRmGTlgb7nHJ339r1JVz0VjdJQ1iGvyw',
             inwarded: '1tXtBsHxrT-ARHp7hKh4FzKAnfhj0pToMWufEk0od7FY'
         };
+
+        // Data source status
+        let dataSource = 'loading';
 
         // Format numbers with commas
         function formatNumber(num) {
@@ -1216,7 +1226,44 @@
             return mappings[field];
         }
 
-        // Load from Google Sheets
+        // ===========================================
+        // DATA LOADING FUNCTIONS
+        // ===========================================
+
+        // Load from Metabase Proxy Server (Recommended)
+        async function loadFromMetabaseProxy() {
+            if (!METABASE_PROXY_URL) {
+                throw new Error('Metabase proxy URL not configured');
+            }
+
+            console.log('Fetching data from Metabase proxy...');
+            const response = await fetch(`${METABASE_PROXY_URL}/api/all`);
+
+            if (!response.ok) {
+                throw new Error(`Proxy request failed: ${response.status}`);
+            }
+
+            const result = await response.json();
+
+            if (!result.success) {
+                throw new Error(result.error || 'Unknown proxy error');
+            }
+
+            // Check for individual errors
+            if (result.errors) {
+                if (result.errors.inventory) console.warn('Inventory error:', result.errors.inventory);
+                if (result.errors.consumption) console.warn('Consumption error:', result.errors.consumption);
+                if (result.errors.inwarded) console.warn('Inwarded error:', result.errors.inwarded);
+            }
+
+            return {
+                inventory: result.data.inventory || [],
+                consumption: result.data.consumption || [],
+                inwarded: result.data.inwarded || []
+            };
+        }
+
+        // Load from Google Sheets (Fallback)
         async function loadFromGoogleSheet(sheetId) {
             const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
             return new Promise((resolve, reject) => {
@@ -1250,27 +1297,64 @@
             try {
                 console.log('Starting data load...');
 
-                try {
-                    [inventoryData, consumptionData, inwardedData] = await Promise.all([
-                        loadFromGoogleSheet(SHEETS.inventory),
-                        loadFromGoogleSheet(SHEETS.consumption),
-                        loadFromGoogleSheet(SHEETS.inwarded)
-                    ]);
-                } catch (sheetError) {
-                    console.log('Google Sheets failed, loading from local CSV...');
-                    [inventoryData, consumptionData, inwardedData] = await Promise.all([
-                        loadCSV('inventory_qty_data.csv'),
-                        loadCSV('consumption_mom_data.csv'),
-                        loadCSV('rm_inwarded_recent.csv')
-                    ]);
+                // Try data sources in order of preference:
+                // 1. Metabase Proxy (if configured)
+                // 2. Google Sheets
+                // 3. Local CSV files
+
+                if (METABASE_PROXY_URL) {
+                    try {
+                        console.log('Trying Metabase proxy...');
+                        const data = await loadFromMetabaseProxy();
+                        inventoryData = data.inventory;
+                        consumptionData = data.consumption;
+                        inwardedData = data.inwarded;
+                        dataSource = 'metabase';
+                        console.log('✓ Data loaded from Metabase proxy');
+                    } catch (proxyError) {
+                        console.warn('Metabase proxy failed:', proxyError.message);
+                        console.log('Falling back to Google Sheets...');
+                    }
+                }
+
+                // Fallback to Google Sheets if Metabase didn't work
+                if (dataSource !== 'metabase') {
+                    try {
+                        [inventoryData, consumptionData, inwardedData] = await Promise.all([
+                            loadFromGoogleSheet(SHEETS.inventory),
+                            loadFromGoogleSheet(SHEETS.consumption),
+                            loadFromGoogleSheet(SHEETS.inwarded)
+                        ]);
+                        dataSource = 'sheets';
+                        console.log('✓ Data loaded from Google Sheets');
+                    } catch (sheetError) {
+                        console.warn('Google Sheets failed:', sheetError.message);
+                        console.log('Falling back to local CSV...');
+
+                        [inventoryData, consumptionData, inwardedData] = await Promise.all([
+                            loadCSV('inventory_qty_data.csv'),
+                            loadCSV('consumption_mom_data.csv'),
+                            loadCSV('rm_inwarded_recent.csv')
+                        ]);
+                        dataSource = 'csv';
+                        console.log('✓ Data loaded from local CSV');
+                    }
                 }
 
                 // Debug logging
+                console.log(`Data source: ${dataSource}`);
                 if (inventoryData.length > 0) console.log('Inventory columns:', Object.keys(inventoryData[0]));
                 if (consumptionData.length > 0) console.log('Consumption columns:', Object.keys(consumptionData[0]));
                 if (inwardedData.length > 0) console.log('Inwarded columns:', Object.keys(inwardedData[0]));
 
-                document.getElementById('last-updated').textContent = new Date().toLocaleString();
+                // Update UI with data source info
+                const sourceLabels = {
+                    metabase: 'Metabase (Live)',
+                    sheets: 'Google Sheets',
+                    csv: 'Local CSV'
+                };
+                document.getElementById('last-updated').textContent =
+                    `${new Date().toLocaleString()} (${sourceLabels[dataSource]})`;
 
                 calculateDoC();
                 calculateConsumptionSpikes();
