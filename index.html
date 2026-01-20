@@ -430,6 +430,199 @@
             margin-bottom: 20px;
         }
 
+        .chart-container.small {
+            max-width: 350px;
+        }
+
+        .chart-container.small canvas {
+            max-height: 200px;
+        }
+
+        .doc-top-section {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .doc-filters-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .doc-filters-panel h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .filter-row {
+            margin-bottom: 15px;
+        }
+
+        .filter-row label {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .multi-select-container {
+            position: relative;
+        }
+
+        .multi-select-trigger {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 14px;
+            min-height: 42px;
+        }
+
+        .multi-select-trigger:hover {
+            border-color: #667eea;
+        }
+
+        .multi-select-trigger.active {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+        }
+
+        .multi-select-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            flex: 1;
+        }
+
+        .multi-select-tag {
+            background: #667eea;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .multi-select-tag button {
+            background: none;
+            border: none;
+            color: white;
+            cursor: pointer;
+            padding: 0;
+            font-size: 14px;
+            line-height: 1;
+        }
+
+        .multi-select-placeholder {
+            color: #999;
+        }
+
+        .multi-select-arrow {
+            margin-left: 8px;
+            color: #666;
+        }
+
+        .multi-select-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            z-index: 1000;
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 4px;
+        }
+
+        .multi-select-dropdown.open {
+            display: block;
+        }
+
+        .multi-select-search {
+            width: 100%;
+            padding: 10px 12px;
+            border: none;
+            border-bottom: 1px solid #eee;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .multi-select-option {
+            padding: 10px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+        }
+
+        .multi-select-option:hover {
+            background: #f5f5f5;
+        }
+
+        .multi-select-option.selected {
+            background: #f0f4ff;
+        }
+
+        .multi-select-option input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: #667eea;
+        }
+
+        .multi-select-actions {
+            padding: 8px 12px;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 8px;
+        }
+
+        .multi-select-actions button {
+            flex: 1;
+            padding: 6px 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            background: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .multi-select-actions button:hover {
+            background: #f5f5f5;
+        }
+
+        .multi-select-actions button.primary {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        @media (max-width: 900px) {
+            .doc-top-section {
+                grid-template-columns: 1fr;
+            }
+            .chart-container.small {
+                max-width: 100%;
+            }
+        }
+
         .chart-header {
             display: flex;
             justify-content: space-between;
@@ -981,12 +1174,59 @@
                 </div>
             </div>
 
-            <div class="chart-container">
-                <div class="chart-header">
-                    <div class="chart-title">Stock Coverage Distribution</div>
-                    <div class="chart-hint">Click segment to filter table</div>
+            <div class="doc-top-section">
+                <div class="chart-container small">
+                    <div class="chart-header">
+                        <div class="chart-title">Coverage Distribution</div>
+                    </div>
+                    <canvas id="docDistributionChart"></canvas>
+                    <div class="chart-hint" style="text-align: center; margin-top: 10px;">Click segment to filter</div>
                 </div>
-                <canvas id="docDistributionChart"></canvas>
+
+                <div class="doc-filters-panel">
+                    <h3>Filter Options</h3>
+                    <div class="filter-row">
+                        <label>Category</label>
+                        <div class="multi-select-container" id="doc-category-select">
+                            <div class="multi-select-trigger" onclick="toggleMultiSelect('doc-category-select')">
+                                <div class="multi-select-tags">
+                                    <span class="multi-select-placeholder">All Categories</span>
+                                </div>
+                                <span class="multi-select-arrow">▼</span>
+                            </div>
+                            <div class="multi-select-dropdown">
+                                <input type="text" class="multi-select-search" placeholder="Search categories..." oninput="filterMultiSelectOptions('doc-category-select', this.value)">
+                                <div class="multi-select-options"></div>
+                                <div class="multi-select-actions">
+                                    <button onclick="clearMultiSelect('doc-category-select')">Clear</button>
+                                    <button class="primary" onclick="applyDocFilters()">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="filter-row">
+                        <label>Product</label>
+                        <div class="multi-select-container" id="doc-product-select">
+                            <div class="multi-select-trigger" onclick="toggleMultiSelect('doc-product-select')">
+                                <div class="multi-select-tags">
+                                    <span class="multi-select-placeholder">All Products</span>
+                                </div>
+                                <span class="multi-select-arrow">▼</span>
+                            </div>
+                            <div class="multi-select-dropdown">
+                                <input type="text" class="multi-select-search" placeholder="Search products..." oninput="filterMultiSelectOptions('doc-product-select', this.value)">
+                                <div class="multi-select-options"></div>
+                                <div class="multi-select-actions">
+                                    <button onclick="clearMultiSelect('doc-product-select')">Clear</button>
+                                    <button class="primary" onclick="applyDocFilters()">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 10px; margin-top: 20px;">
+                        <button class="btn btn-secondary" onclick="clearAllDocFilters()" style="flex: 1;">Clear All Filters</button>
+                    </div>
+                </div>
             </div>
 
             <div class="table-container">
@@ -994,7 +1234,6 @@
                     <div class="table-title">Days of Cover Analysis <span id="doc-filter-label"></span></div>
                     <div class="table-actions">
                         <input type="text" class="search-box" id="doc-search" placeholder="Search products...">
-                        <button class="btn btn-secondary" onclick="clearDocFilter()">Clear Filter</button>
                         <button class="btn btn-primary" onclick="exportDoc()">Export CSV</button>
                     </div>
                 </div>
@@ -1134,6 +1373,11 @@
         let inventorySortDir = 'asc';
         let docSortField = 'doc';
         let docSortDir = 'asc';
+
+        // Multi-select filter states for DoC
+        let docSelectedCategories = [];
+        let docSelectedProducts = [];
+        let multiSelectData = {};
 
         // Chart instances
         let charts = {};
@@ -1928,7 +2172,7 @@
             charts.docDistribution = new Chart(document.getElementById('docDistributionChart'), {
                 type: 'pie',
                 data: {
-                    labels: ['Critical (<7 days)', 'Low (7-30 days)', 'Healthy (>30 days)', 'No Data'],
+                    labels: ['Critical (<7)', 'Low (7-30)', 'Healthy (>30)', 'No Data'],
                     datasets: [{
                         data: [critical, low, healthy, noData],
                         backgroundColor: ['#ef4444', '#f59e0b', '#10b981', '#9ca3af']
@@ -1936,15 +2180,31 @@
                 },
                 options: {
                     responsive: true,
+                    maintainAspectRatio: true,
                     onClick: (e, elements) => {
                         if (elements.length > 0) {
                             const statuses = ['critical', 'low', 'healthy', 'nodata'];
                             filterDocByStatus(statuses[elements[0].index]);
                         }
                     },
-                    plugins: { legend: { position: 'right' } }
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: { boxWidth: 12, padding: 8, font: { size: 11 } }
+                        }
+                    }
                 }
             });
+
+            // Populate multi-select dropdowns
+            const categories = [...new Set(docData.map(d => d.category).filter(c => c))].sort();
+            const products = [...new Set(docData.map(d => d.product).filter(p => p))].sort();
+
+            multiSelectData['doc-category-select'] = categories;
+            multiSelectData['doc-product-select'] = products;
+
+            populateMultiSelect('doc-category-select', categories);
+            populateMultiSelect('doc-product-select', products);
 
             const sortedDoc = [...docData].sort((a, b) => {
                 if (a.doc === null) return 1;
@@ -1955,12 +2215,195 @@
             renderDocTable(sortedDoc);
 
             document.getElementById('doc-search').addEventListener('input', (e) => {
-                const search = e.target.value.toLowerCase();
-                let filtered = currentDocFilter ? applyDocFilter(sortedDoc) : sortedDoc;
-                filtered = filtered.filter(row => (row.product || '').toLowerCase().includes(search));
-                renderDocTable(filtered);
+                applyDocFilters();
             });
         }
+
+        // Multi-select helper functions
+        function populateMultiSelect(containerId, options) {
+            const container = document.getElementById(containerId);
+            const optionsDiv = container.querySelector('.multi-select-options');
+
+            optionsDiv.innerHTML = options.map(opt => `
+                <div class="multi-select-option" data-value="${opt}">
+                    <input type="checkbox" value="${opt}">
+                    <span>${opt}</span>
+                </div>
+            `).join('');
+
+            // Add click handlers
+            optionsDiv.querySelectorAll('.multi-select-option').forEach(option => {
+                option.addEventListener('click', (e) => {
+                    if (e.target.type !== 'checkbox') {
+                        const checkbox = option.querySelector('input[type="checkbox"]');
+                        checkbox.checked = !checkbox.checked;
+                    }
+                    option.classList.toggle('selected', option.querySelector('input').checked);
+                });
+            });
+        }
+
+        function toggleMultiSelect(containerId) {
+            const container = document.getElementById(containerId);
+            const dropdown = container.querySelector('.multi-select-dropdown');
+            const trigger = container.querySelector('.multi-select-trigger');
+
+            // Close other dropdowns
+            document.querySelectorAll('.multi-select-dropdown.open').forEach(d => {
+                if (d !== dropdown) {
+                    d.classList.remove('open');
+                    d.closest('.multi-select-container').querySelector('.multi-select-trigger').classList.remove('active');
+                }
+            });
+
+            dropdown.classList.toggle('open');
+            trigger.classList.toggle('active', dropdown.classList.contains('open'));
+
+            if (dropdown.classList.contains('open')) {
+                container.querySelector('.multi-select-search').focus();
+            }
+        }
+
+        function filterMultiSelectOptions(containerId, searchText) {
+            const container = document.getElementById(containerId);
+            const options = container.querySelectorAll('.multi-select-option');
+            const search = searchText.toLowerCase();
+
+            options.forEach(option => {
+                const text = option.querySelector('span').textContent.toLowerCase();
+                option.style.display = text.includes(search) ? 'flex' : 'none';
+            });
+        }
+
+        function getMultiSelectValues(containerId) {
+            const container = document.getElementById(containerId);
+            const selected = [];
+            container.querySelectorAll('.multi-select-option input:checked').forEach(input => {
+                selected.push(input.value);
+            });
+            return selected;
+        }
+
+        function updateMultiSelectTrigger(containerId, selected, placeholder) {
+            const container = document.getElementById(containerId);
+            const tagsDiv = container.querySelector('.multi-select-tags');
+
+            if (selected.length === 0) {
+                tagsDiv.innerHTML = `<span class="multi-select-placeholder">${placeholder}</span>`;
+            } else if (selected.length <= 2) {
+                tagsDiv.innerHTML = selected.map(s => `
+                    <span class="multi-select-tag">
+                        ${s.length > 20 ? s.substring(0, 20) + '...' : s}
+                        <button onclick="event.stopPropagation(); removeMultiSelectItem('${containerId}', '${s}')">&times;</button>
+                    </span>
+                `).join('');
+            } else {
+                tagsDiv.innerHTML = `
+                    <span class="multi-select-tag">${selected.length} selected</span>
+                `;
+            }
+        }
+
+        function removeMultiSelectItem(containerId, value) {
+            const container = document.getElementById(containerId);
+            const option = container.querySelector(`.multi-select-option input[value="${value}"]`);
+            if (option) {
+                option.checked = false;
+                option.closest('.multi-select-option').classList.remove('selected');
+            }
+            applyDocFilters();
+        }
+
+        function clearMultiSelect(containerId) {
+            const container = document.getElementById(containerId);
+            container.querySelectorAll('.multi-select-option input').forEach(input => {
+                input.checked = false;
+                input.closest('.multi-select-option').classList.remove('selected');
+            });
+            const placeholder = containerId.includes('category') ? 'All Categories' : 'All Products';
+            updateMultiSelectTrigger(containerId, [], placeholder);
+        }
+
+        function applyDocFilters() {
+            docSelectedCategories = getMultiSelectValues('doc-category-select');
+            docSelectedProducts = getMultiSelectValues('doc-product-select');
+
+            updateMultiSelectTrigger('doc-category-select', docSelectedCategories, 'All Categories');
+            updateMultiSelectTrigger('doc-product-select', docSelectedProducts, 'All Products');
+
+            // Close dropdowns
+            document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('open'));
+            document.querySelectorAll('.multi-select-trigger').forEach(t => t.classList.remove('active'));
+
+            // Apply filters
+            let filtered = [...docData];
+
+            // Apply status filter
+            if (currentDocFilter) {
+                filtered = applyDocFilter(filtered);
+            }
+
+            // Apply category filter
+            if (docSelectedCategories.length > 0) {
+                filtered = filtered.filter(d => docSelectedCategories.includes(d.category));
+            }
+
+            // Apply product filter
+            if (docSelectedProducts.length > 0) {
+                filtered = filtered.filter(d => docSelectedProducts.includes(d.product));
+            }
+
+            // Apply search filter
+            const search = document.getElementById('doc-search').value.toLowerCase();
+            if (search) {
+                filtered = filtered.filter(row => (row.product || '').toLowerCase().includes(search));
+            }
+
+            // Update filter label
+            const filterParts = [];
+            if (currentDocFilter) {
+                const labels = { critical: 'Critical', low: 'Low Stock', healthy: 'Healthy', nodata: 'No Data' };
+                filterParts.push(labels[currentDocFilter]);
+            }
+            if (docSelectedCategories.length > 0) {
+                filterParts.push(`${docSelectedCategories.length} categories`);
+            }
+            if (docSelectedProducts.length > 0) {
+                filterParts.push(`${docSelectedProducts.length} products`);
+            }
+            document.getElementById('doc-filter-label').textContent = filterParts.length > 0 ? `(${filterParts.join(', ')})` : '';
+
+            // Sort by DoC
+            filtered.sort((a, b) => {
+                if (a.doc === null) return 1;
+                if (b.doc === null) return -1;
+                return a.doc - b.doc;
+            });
+
+            renderDocTable(filtered);
+        }
+
+        function clearAllDocFilters() {
+            currentDocFilter = null;
+            docSelectedCategories = [];
+            docSelectedProducts = [];
+
+            clearMultiSelect('doc-category-select');
+            clearMultiSelect('doc-product-select');
+
+            document.getElementById('doc-filter-label').textContent = '';
+            document.getElementById('doc-search').value = '';
+
+            renderDocTable(docData);
+        }
+
+        // Close multi-select dropdowns when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.multi-select-container')) {
+                document.querySelectorAll('.multi-select-dropdown').forEach(d => d.classList.remove('open'));
+                document.querySelectorAll('.multi-select-trigger').forEach(t => t.classList.remove('active'));
+            }
+        });
 
         function applyDocFilter(data) {
             if (!currentDocFilter) return data;
@@ -1975,16 +2418,11 @@
 
         function filterDocByStatus(status) {
             currentDocFilter = status;
-            const labels = { critical: 'Critical', low: 'Low Stock', healthy: 'Healthy', nodata: 'No Data' };
-            document.getElementById('doc-filter-label').textContent = `(${labels[status]})`;
-            renderDocTable(applyDocFilter(docData));
+            applyDocFilters();
         }
 
         function clearDocFilter() {
-            currentDocFilter = null;
-            document.getElementById('doc-filter-label').textContent = '';
-            document.getElementById('doc-search').value = '';
-            renderDocTable(docData);
+            clearAllDocFilters();
         }
 
         function sortDoc(field) {
@@ -1994,7 +2432,14 @@
                 docSortField = field;
                 docSortDir = 'asc';
             }
-            let data = currentDocFilter ? applyDocFilter(docData) : [...docData];
+
+            // Get currently filtered data
+            let data = [...docData];
+            if (currentDocFilter) data = applyDocFilter(data);
+            if (docSelectedCategories.length > 0) data = data.filter(d => docSelectedCategories.includes(d.category));
+            if (docSelectedProducts.length > 0) data = data.filter(d => docSelectedProducts.includes(d.product));
+            const search = document.getElementById('doc-search').value.toLowerCase();
+            if (search) data = data.filter(row => (row.product || '').toLowerCase().includes(search));
             data.sort((a, b) => {
                 let aVal = a[field];
                 let bVal = b[field];
